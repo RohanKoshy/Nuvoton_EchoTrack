@@ -1,0 +1,18 @@
+--cpu=Cortex-M55 --fpu=FPv5_D16
+".\obj\startup_m55m1.o"
+".\obj\system_m55m1.o"
+".\obj\retarget.o"
+".\obj\clk.o"
+".\obj\sys.o"
+".\obj\uart.o"
+".\obj\gpio.o"
+".\obj\i2s.o"
+".\obj\i2c.o"
+".\obj\pdma.o"
+".\obj\main.o"
+".\obj\descriptors.o"
+".\obj\vcom_serial.o"
+--library_type=microlib --strict --scatter "..\..\..\..\Library\Device\Nuvoton\M55M1\Source\ARM\M55M1.scf"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\lst\I2S_Codec_PDMA.map" -o .\obj\I2S_Codec_PDMA.axf

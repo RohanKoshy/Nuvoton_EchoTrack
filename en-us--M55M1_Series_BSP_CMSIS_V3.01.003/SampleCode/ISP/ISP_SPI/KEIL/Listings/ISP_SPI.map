@@ -1,0 +1,865 @@
+Component: Arm Compiler for Embedded 6.21 Tool: armlink [5ec1fa00]
+
+==============================================================================
+
+Section Cross References
+
+    isp_startup_m55m1.o(.ARM.exidx.text.Default_Handler) refers to isp_startup_m55m1.o(.text.Default_Handler) for [Anonymous Symbol]
+    isp_startup_m55m1.o(.text.Reset_Handler) refers to entry.o(.ARM.Collect$$$$00000000) for __main
+    isp_startup_m55m1.o(.ARM.exidx.text.Reset_Handler) refers to isp_startup_m55m1.o(.text.Reset_Handler) for [Anonymous Symbol]
+    isp_startup_m55m1.o(.ARM.exidx.text.HardFault_Handler) refers to isp_startup_m55m1.o(.text.HardFault_Handler) for [Anonymous Symbol]
+    isp_startup_m55m1.o(RESET) refers to isp_startup_m55m1.o(.text.Reset_Handler) for Reset_Handler
+    isp_startup_m55m1.o(RESET) refers to isp_startup_m55m1.o(.text.Default_Handler) for NMI_Handler
+    isp_startup_m55m1.o(RESET) refers to isp_startup_m55m1.o(.text.HardFault_Handler) for HardFault_Handler
+    isp_startup_m55m1.o(DTCM.VTOR) refers to isp_startup_m55m1.o(.text.Reset_Handler) for Reset_Handler
+    isp_startup_m55m1.o(DTCM.VTOR) refers to isp_startup_m55m1.o(.text.Default_Handler) for NMI_Handler
+    isp_startup_m55m1.o(DTCM.VTOR) refers to isp_startup_m55m1.o(.text.HardFault_Handler) for HardFault_Handler
+    isp_startup_m55m1.o(DTCM.VTOR) refers to spi_transfer.o(ITCM) for SPI2_IRQHandler
+    isp_system_m55m1.o(.text.SystemCoreClockUpdate) refers to clk.o(.text.CLK_SystemClockUpdate) for CLK_SystemClockUpdate
+    isp_system_m55m1.o(.text.SystemCoreClockUpdate) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    isp_system_m55m1.o(.text.SystemCoreClockUpdate) refers to isp_system_m55m1.o(.data.CyclesPerUs) for CyclesPerUs
+    isp_system_m55m1.o(.ARM.exidx.text.SystemCoreClockUpdate) refers to isp_system_m55m1.o(.text.SystemCoreClockUpdate) for [Anonymous Symbol]
+    isp_system_m55m1.o(.ARM.exidx.text.SetDebugUartMFP) refers to isp_system_m55m1.o(.text.SetDebugUartMFP) for [Anonymous Symbol]
+    isp_system_m55m1.o(.text.SetDebugUartCLK) refers to clk.o(.text.CLK_SetModuleClock) for CLK_SetModuleClock
+    isp_system_m55m1.o(.text.SetDebugUartCLK) refers to clk.o(.text.CLK_EnableModuleClock) for CLK_EnableModuleClock
+    isp_system_m55m1.o(.text.SetDebugUartCLK) refers to sys.o(.text.SYS_ResetModule) for SYS_ResetModule
+    isp_system_m55m1.o(.ARM.exidx.text.SetDebugUartCLK) refers to isp_system_m55m1.o(.text.SetDebugUartCLK) for [Anonymous Symbol]
+    isp_system_m55m1.o(.ARM.exidx.text.InitDebugUart) refers to isp_system_m55m1.o(.text.InitDebugUart) for [Anonymous Symbol]
+    isp_system_m55m1.o(.text.SystemInit) refers to isp_startup_m55m1.o(DTCM.VTOR) for DTCM_VECTOR_TABLE
+    isp_system_m55m1.o(.ARM.exidx.text.SystemInit) refers to isp_system_m55m1.o(.text.SystemInit) for [Anonymous Symbol]
+    isp_system_m55m1.o(.init_array) refers to isp_system_m55m1.o(.text.SystemInit) for SystemInit
+    clk.o(.ARM.exidx.text.CLK_DisableCKO) refers to clk.o(.text.CLK_DisableCKO) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_EnableCKO) refers to clk.o(.text.CLK_EnableCKO) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_GetHXTFreq) refers to clk.o(.text.CLK_GetHXTFreq) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_GetLXTFreq) refers to clk.o(.text.CLK_GetLXTFreq) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetMIRCFreq) refers to clk.o(.rodata.cst16) for .Lswitch.table.CLK_SystemClockUpdate
+    clk.o(.ARM.exidx.text.CLK_GetMIRCFreq) refers to clk.o(.text.CLK_GetMIRCFreq) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_DisableMIRC) refers to clk.o(.text.CLK_DisableMIRC) for [Anonymous Symbol]
+    clk.o(.text.CLK_EnableMIRC) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    clk.o(.text.CLK_EnableMIRC) refers to clk.o(.rodata.cst16) for .Lswitch.table.CLK_SystemClockUpdate
+    clk.o(.ARM.exidx.text.CLK_EnableMIRC) refers to clk.o(.text.CLK_EnableMIRC) for [Anonymous Symbol]
+    clk.o(.text.CLK_WaitClockReady) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    clk.o(.ARM.exidx.text.CLK_WaitClockReady) refers to clk.o(.text.CLK_WaitClockReady) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetPCLK0Freq) refers to clk.o(.text.CLK_SystemClockUpdate) for CLK_SystemClockUpdate
+    clk.o(.ARM.exidx.text.CLK_GetPCLK0Freq) refers to clk.o(.text.CLK_GetPCLK0Freq) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetHCLK0Freq) refers to clk.o(.text.CLK_SystemClockUpdate) for CLK_SystemClockUpdate
+    clk.o(.ARM.exidx.text.CLK_GetHCLK0Freq) refers to clk.o(.text.CLK_GetHCLK0Freq) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetPCLK1Freq) refers to clk.o(.text.CLK_SystemClockUpdate) for CLK_SystemClockUpdate
+    clk.o(.ARM.exidx.text.CLK_GetPCLK1Freq) refers to clk.o(.text.CLK_GetPCLK1Freq) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetPCLK2Freq) refers to clk.o(.text.CLK_SystemClockUpdate) for CLK_SystemClockUpdate
+    clk.o(.ARM.exidx.text.CLK_GetPCLK2Freq) refers to clk.o(.text.CLK_GetPCLK2Freq) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetPCLK3Freq) refers to clk.o(.text.CLK_SystemClockUpdate) for CLK_SystemClockUpdate
+    clk.o(.ARM.exidx.text.CLK_GetPCLK3Freq) refers to clk.o(.text.CLK_GetPCLK3Freq) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetPCLK4Freq) refers to clk.o(.text.CLK_SystemClockUpdate) for CLK_SystemClockUpdate
+    clk.o(.ARM.exidx.text.CLK_GetPCLK4Freq) refers to clk.o(.text.CLK_GetPCLK4Freq) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetHCLK2Freq) refers to clk.o(.text.CLK_SystemClockUpdate) for CLK_SystemClockUpdate
+    clk.o(.ARM.exidx.text.CLK_GetHCLK2Freq) refers to clk.o(.text.CLK_GetHCLK2Freq) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetPCLK5Freq) refers to isp_system_m55m1.o(.text.SystemCoreClockUpdate) for SystemCoreClockUpdate
+    clk.o(.text.CLK_GetPCLK5Freq) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    clk.o(.ARM.exidx.text.CLK_GetPCLK5Freq) refers to clk.o(.text.CLK_GetPCLK5Freq) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetACLKFreq) refers to isp_system_m55m1.o(.text.SystemCoreClockUpdate) for SystemCoreClockUpdate
+    clk.o(.text.CLK_GetACLKFreq) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    clk.o(.ARM.exidx.text.CLK_GetACLKFreq) refers to clk.o(.text.CLK_GetACLKFreq) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetSCLKFreq) refers to clk.o(.text.CLK_SystemClockUpdate) for CLK_SystemClockUpdate
+    clk.o(.text.CLK_GetSCLKFreq) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    clk.o(.ARM.exidx.text.CLK_GetSCLKFreq) refers to clk.o(.text.CLK_GetSCLKFreq) for [Anonymous Symbol]
+    clk.o(.text.CLK_SystemClockUpdate) refers to clk.o(.rodata.cst4) for .L__const.CLK_GetAPLL1ClockFreq.au8NoTbl
+    clk.o(.text.CLK_SystemClockUpdate) refers to isp_system_m55m1.o(.data.PllClock) for PllClock
+    clk.o(.text.CLK_SystemClockUpdate) refers to clk.o(.rodata.cst16) for .Lswitch.table.CLK_SystemClockUpdate
+    clk.o(.ARM.exidx.text.CLK_SystemClockUpdate) refers to clk.o(.text.CLK_SystemClockUpdate) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetHCLK1Freq) refers to clk.o(.text.CLK_SystemClockUpdate) for CLK_SystemClockUpdate
+    clk.o(.ARM.exidx.text.CLK_GetHCLK1Freq) refers to clk.o(.text.CLK_GetHCLK1Freq) for [Anonymous Symbol]
+    clk.o(.text.CLK_SetCoreClock) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    clk.o(.text.CLK_SetCoreClock) refers to clk.o(.text.CLK_EnableAPLL) for CLK_EnableAPLL
+    clk.o(.text.CLK_SetCoreClock) refers to clk.o(.text.CLK_SetSCLK) for CLK_SetSCLK
+    clk.o(.ARM.exidx.text.CLK_SetCoreClock) refers to clk.o(.text.CLK_SetCoreClock) for [Anonymous Symbol]
+    clk.o(.text.CLK_EnableAPLL) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    clk.o(.text.CLK_EnableAPLL) refers to clk.o(.rodata.cst4) for .L__const.CLK_GetAPLL1ClockFreq.au8NoTbl
+    clk.o(.ARM.exidx.text.CLK_EnableAPLL) refers to clk.o(.text.CLK_EnableAPLL) for [Anonymous Symbol]
+    clk.o(.text.CLK_SetSCLK) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    clk.o(.text.CLK_SetSCLK) refers to isp_system_m55m1.o(.data.PllClock) for PllClock
+    clk.o(.text.CLK_SetSCLK) refers to clk.o(.rodata.cst4) for .L__const.CLK_GetAPLL1ClockFreq.au8NoTbl
+    clk.o(.text.CLK_SetSCLK) refers to isp_system_m55m1.o(.text.SystemCoreClockUpdate) for SystemCoreClockUpdate
+    clk.o(.ARM.exidx.text.CLK_SetSCLK) refers to clk.o(.text.CLK_SetSCLK) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetAPLL0ClockFreq) refers to clk.o(.rodata.cst4) for .L__const.CLK_GetAPLL1ClockFreq.au8NoTbl
+    clk.o(.ARM.exidx.text.CLK_GetAPLL0ClockFreq) refers to clk.o(.text.CLK_GetAPLL0ClockFreq) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_SetModuleClock) refers to clk.o(.text.CLK_SetModuleClock) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_SetSysTickClockSrc) refers to clk.o(.text.CLK_SetSysTickClockSrc) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_EnableXtalRC) refers to clk.o(.text.CLK_EnableXtalRC) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_DisableXtalRC) refers to clk.o(.text.CLK_DisableXtalRC) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_EnableModuleClock) refers to clk.o(.text.CLK_EnableModuleClock) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_DisableModuleClock) refers to clk.o(.text.CLK_DisableModuleClock) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_DisableAPLL) refers to clk.o(.text.CLK_DisableAPLL) for [Anonymous Symbol]
+    clk.o(.text.CLK_WaitClockDisable) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    clk.o(.ARM.exidx.text.CLK_WaitClockDisable) refers to clk.o(.text.CLK_WaitClockDisable) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_EnableSysTick) refers to clk.o(.text.CLK_EnableSysTick) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_DisableSysTick) refers to clk.o(.text.CLK_DisableSysTick) for [Anonymous Symbol]
+    clk.o(.text.CLK_GetAPLL1ClockFreq) refers to clk.o(.rodata.cst4) for .L__const.CLK_GetAPLL1ClockFreq.au8NoTbl
+    clk.o(.ARM.exidx.text.CLK_GetAPLL1ClockFreq) refers to clk.o(.text.CLK_GetAPLL1ClockFreq) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_GetModuleClockSource) refers to clk.o(.text.CLK_GetModuleClockSource) for [Anonymous Symbol]
+    clk.o(.ARM.exidx.text.CLK_GetModuleClockDivider) refers to clk.o(.text.CLK_GetModuleClockDivider) for [Anonymous Symbol]
+    clk.o(.text.CLK_SetBusClock) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    clk.o(.text.CLK_SetBusClock) refers to clk.o(.text.CLK_SetSCLK) for CLK_SetSCLK
+    clk.o(.text.CLK_SetBusClock) refers to clk.o(.text.CLK_EnableAPLL) for CLK_EnableAPLL
+    clk.o(.ARM.exidx.text.CLK_SetBusClock) refers to clk.o(.text.CLK_SetBusClock) for [Anonymous Symbol]
+    clk.o(.text.CLK_SysTickDelay) refers to isp_system_m55m1.o(.data.CyclesPerUs) for CyclesPerUs
+    clk.o(.ARM.exidx.text.CLK_SysTickDelay) refers to clk.o(.text.CLK_SysTickDelay) for [Anonymous Symbol]
+    clk.o(.text.CLK_SysTickLongDelay) refers to isp_system_m55m1.o(.data.CyclesPerUs) for CyclesPerUs
+    clk.o(.ARM.exidx.text.CLK_SysTickLongDelay) refers to clk.o(.text.CLK_SysTickLongDelay) for [Anonymous Symbol]
+    sys.o(.ARM.exidx.text.SYS_ResetModule) refers to sys.o(.text.SYS_ResetModule) for [Anonymous Symbol]
+    sys.o(.text.SYS_EnableBOD) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    sys.o(.ARM.exidx.text.SYS_EnableBOD) refers to sys.o(.text.SYS_EnableBOD) for [Anonymous Symbol]
+    sys.o(.text.SYS_DisableBOD) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    sys.o(.ARM.exidx.text.SYS_DisableBOD) refers to sys.o(.text.SYS_DisableBOD) for [Anonymous Symbol]
+    main.o(.text.SYS_Init) refers to clk.o(.text.CLK_EnableAPLL) for CLK_EnableAPLL
+    main.o(.text.SYS_Init) refers to clk.o(.text.CLK_SetSCLK) for CLK_SetSCLK
+    main.o(.text.SYS_Init) refers to isp_system_m55m1.o(.data.PllClock) for PllClock
+    main.o(.text.SYS_Init) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    main.o(.text.SYS_Init) refers to isp_system_m55m1.o(.data.CyclesPerUs) for CyclesPerUs
+    main.o(.text.SYS_Init) refers to clk.o(.text.CLK_EnableModuleClock) for CLK_EnableModuleClock
+    main.o(.ARM.exidx.text.SYS_Init) refers to main.o(.text.SYS_Init) for [Anonymous Symbol]
+    main.o(.text.main) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    main.o(.text.main) refers to main.o(.text.SYS_Init) for SYS_Init
+    main.o(.text.main) refers to targetdev.o(.text.GetApromSize) for GetApromSize
+    main.o(.text.main) refers to targetdev.o(.bss.g_u32ApromSize) for g_u32ApromSize
+    main.o(.text.main) refers to spi_transfer.o(.text.SPI_Init) for SPI_Init
+    main.o(.text.main) refers to spi_transfer.o(.bss.bSpiDataReady) for bSpiDataReady
+    main.o(.text.main) refers to clk.o(.text.CLK_SysTickDelay) for CLK_SysTickDelay
+    main.o(.text.main) refers to main.o(.text.FMC_SetVectorPageAddr) for FMC_SetVectorPageAddr
+    main.o(.text.main) refers to main.o(.text.__NVIC_SystemReset) for __NVIC_SystemReset
+    main.o(.text.main) refers to spi_transfer.o(.bss.spi_rcvbuf) for spi_rcvbuf
+    main.o(.text.main) refers to isp_user.o(.text.ParseCmd) for ParseCmd
+    main.o(.ARM.exidx.text.main) refers to main.o(.text.main) for [Anonymous Symbol]
+    main.o(.text.FMC_SetVectorPageAddr) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    main.o(.text.FMC_SetVectorPageAddr) refers to fmc_user.o(.bss.g_FMC_i32ErrCode) for g_FMC_i32ErrCode
+    main.o(.ARM.exidx.text.FMC_SetVectorPageAddr) refers to main.o(.text.FMC_SetVectorPageAddr) for [Anonymous Symbol]
+    main.o(.ARM.exidx.text.__NVIC_SystemReset) refers to main.o(.text.__NVIC_SystemReset) for [Anonymous Symbol]
+    spi_transfer.o(.ARM.exidx.text.SPI_Init) refers to spi_transfer.o(.text.SPI_Init) for [Anonymous Symbol]
+    spi_transfer.o(ITCM) refers to spi_transfer.o(.bss.s_u32RxDataCount) for s_u32RxDataCount
+    spi_transfer.o(ITCM) refers to isp_user.o(.bss.g_au8ResponseBuff) for g_au8ResponseBuff
+    spi_transfer.o(ITCM) refers to isp_system_m55m1.o(.data.CyclesPerUs) for CyclesPerUs
+    spi_transfer.o(ITCM) refers to spi_transfer.o(.bss.spi_rcvbuf) for spi_rcvbuf
+    spi_transfer.o(ITCM) refers to spi_transfer.o(.bss.s_u32TxDataCount) for s_u32TxDataCount
+    spi_transfer.o(ITCM) refers to spi_transfer.o(.bss.bSpiDataReady) for bSpiDataReady
+    spi_transfer.o(.ARM.exidxITCM) refers to spi_transfer.o(ITCM) for [Anonymous Symbol]
+    fmc_user.o(.text.FMC_Proc) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    fmc_user.o(.ARM.exidx.text.FMC_Proc) refers to fmc_user.o(.text.FMC_Proc) for [Anonymous Symbol]
+    fmc_user.o(.text.FMC_Write_User) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    fmc_user.o(.ARM.exidx.text.FMC_Write_User) refers to fmc_user.o(.text.FMC_Write_User) for [Anonymous Symbol]
+    fmc_user.o(.text.FMC_Read_User) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    fmc_user.o(.ARM.exidx.text.FMC_Read_User) refers to fmc_user.o(.text.FMC_Read_User) for [Anonymous Symbol]
+    fmc_user.o(.text.FMC_Erase_User) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    fmc_user.o(.ARM.exidx.text.FMC_Erase_User) refers to fmc_user.o(.text.FMC_Erase_User) for [Anonymous Symbol]
+    fmc_user.o(.text.ReadData) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    fmc_user.o(.ARM.exidx.text.ReadData) refers to fmc_user.o(.text.ReadData) for [Anonymous Symbol]
+    fmc_user.o(.text.WriteData) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    fmc_user.o(.ARM.exidx.text.WriteData) refers to fmc_user.o(.text.WriteData) for [Anonymous Symbol]
+    fmc_user.o(.text.EraseAP) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    fmc_user.o(.ARM.exidx.text.EraseAP) refers to fmc_user.o(.text.EraseAP) for [Anonymous Symbol]
+    fmc_user.o(.text.UpdateConfig) refers to isp_system_m55m1.o(.data.SystemCoreClock) for SystemCoreClock
+    fmc_user.o(.ARM.exidx.text.UpdateConfig) refers to fmc_user.o(.text.UpdateConfig) for [Anonymous Symbol]
+    isp_user.o(.text.ParseCmd) refers to isp_user.o(.bss.g_au8ResponseBuff) for g_au8ResponseBuff
+    isp_user.o(.text.ParseCmd) refers to fmc_user.o(.text.ReadData) for ReadData
+    isp_user.o(.text.ParseCmd) refers to targetdev.o(.bss.g_u32ApromSize) for g_u32ApromSize
+    isp_user.o(.text.ParseCmd) refers to fmc_user.o(.text.EraseAP) for EraseAP
+    isp_user.o(.text.ParseCmd) refers to isp_user.o(.bss.g_u32UpdateApromCmd) for g_u32UpdateApromCmd
+    isp_user.o(.text.ParseCmd) refers to isp_user.o(.bss.ParseCmd.u32Gcmd) for ParseCmd.u32Gcmd
+    isp_user.o(.text.ParseCmd) refers to isp_user.o(.data.ParseCmd.u32PackNo) for ParseCmd.u32PackNo
+    isp_user.o(.text.ParseCmd) refers to isp_user.o(.bss.ParseCmd.u32LastDataLen) for ParseCmd.u32LastDataLen
+    isp_user.o(.text.ParseCmd) refers to isp_user.o(.bss.ParseCmd.u32StartAddress) for ParseCmd.u32StartAddress
+    isp_user.o(.text.ParseCmd) refers to isp_user.o(.bss.ParseCmd.u32TotalLen) for ParseCmd.u32TotalLen
+    isp_user.o(.text.ParseCmd) refers to isp_user.o(.bss.g_au8ApromBuf) for g_au8ApromBuf
+    isp_user.o(.text.ParseCmd) refers to fmc_user.o(.text.FMC_Erase_User) for FMC_Erase_User
+    isp_user.o(.text.ParseCmd) refers to fmc_user.o(.text.WriteData) for WriteData
+    isp_user.o(.text.ParseCmd) refers to fmc_user.o(.text.UpdateConfig) for UpdateConfig
+    isp_user.o(.text.ParseCmd) refers to isp_user.o(.bss.g_u32DataFlashSize) for g_u32DataFlashSize
+    isp_user.o(.text.ParseCmd) refers to isp_user.o(.bss.g_u32DataFlashAddr) for g_u32DataFlashAddr
+    isp_user.o(.text.ParseCmd) refers to isp_user.o(.bss.ParseCmd.u32StartAddress_bak) for ParseCmd.u32StartAddress_bak
+    isp_user.o(.text.ParseCmd) refers to isp_user.o(.bss.ParseCmd.u32TotalLen_bak) for ParseCmd.u32TotalLen_bak
+    isp_user.o(.text.ParseCmd) refers to memseta.o(.text) for __aeabi_memclr
+    isp_user.o(.ARM.exidx.text.ParseCmd) refers to isp_user.o(.text.ParseCmd) for [Anonymous Symbol]
+    targetdev.o(.ARM.exidx.text.UserMemCopy) refers to targetdev.o(.text.UserMemCopy) for [Anonymous Symbol]
+    targetdev.o(.text.GetApromSize) refers to fmc_user.o(.text.FMC_Read_User) for FMC_Read_User
+    targetdev.o(.ARM.exidx.text.GetApromSize) refers to targetdev.o(.text.GetApromSize) for [Anonymous Symbol]
+    entry.o(.ARM.Collect$$$$00000000) refers (Special) to entry10a.o(.ARM.Collect$$$$0000000D) for __rt_final_cpp
+    entry.o(.ARM.Collect$$$$00000000) refers (Special) to entry11a.o(.ARM.Collect$$$$0000000F) for __rt_final_exit
+    entry.o(.ARM.Collect$$$$00000000) refers (Special) to entry7b.o(.ARM.Collect$$$$00000008) for _main_clock
+    entry.o(.ARM.Collect$$$$00000000) refers (Special) to entry8b.o(.ARM.Collect$$$$0000000A) for _main_cpp_init
+    entry.o(.ARM.Collect$$$$00000000) refers (Special) to entry9a.o(.ARM.Collect$$$$0000000B) for _main_init
+    entry.o(.ARM.Collect$$$$00000000) refers (Special) to entry5.o(.ARM.Collect$$$$00000004) for _main_scatterload
+    entry.o(.ARM.Collect$$$$00000000) refers (Special) to entry4.o(.ARM.Collect$$$$00000003) for _main_stk
+    cpp_init.o(.emb_text) refers (Special) to entry8a.o(.ARM.Collect$$$$00000009) for _main_cpp_init$empty
+    cpp_init.o(.init_array) refers (Special) to entry8a.o(.ARM.Collect$$$$00000009) for _main_cpp_init$empty
+    cpp_init.o(.dummy_text) refers (Special) to entry8a.o(.ARM.Collect$$$$00000009) for _main_cpp_init$empty
+    cpp_init.o(.text) refers (Special) to entry8a.o(.ARM.Collect$$$$00000009) for _main_cpp_init$empty
+    entry4.o(.ARM.Collect$$$$00000003) refers to entry4.o(.ARM.Collect$$$$00002714) for __lit__00000000
+    entry4.o(__vectab_stack_and_reset_area) refers to entry.o(.ARM.Collect$$$$00000000) for __main
+    entry5.o(.ARM.Collect$$$$00000004) refers to init.o(.text) for __scatterload
+    entry8a.o(.ARM.Collect$$$$00000009) refers (Weak) to cpp_init.o(.text) for __cpp_initialize__aeabi_
+    entry9a.o(.ARM.Collect$$$$0000000B) refers to main.o(.text.main) for main
+    entry9b.o(.ARM.Collect$$$$0000000C) refers to main.o(.text.main) for main
+    init.o(.text) refers to entry5.o(.ARM.Collect$$$$00000004) for __main_after_scatterload
+
+
+==============================================================================
+
+Removing Unused input sections from the image.
+
+    Removing isp_startup_m55m1.o(.text), (0 bytes).
+    Removing isp_startup_m55m1.o(.ARM.exidx.text.Default_Handler), (8 bytes).
+    Removing isp_startup_m55m1.o(.ARM.exidx.text.Reset_Handler), (8 bytes).
+    Removing isp_startup_m55m1.o(.ARM.exidx.text.HardFault_Handler), (8 bytes).
+    Removing isp_system_m55m1.o(.text), (0 bytes).
+    Removing isp_system_m55m1.o(.ARM.exidx.text.SystemCoreClockUpdate), (8 bytes).
+    Removing isp_system_m55m1.o(.text.SetDebugUartMFP), (28 bytes).
+    Removing isp_system_m55m1.o(.ARM.exidx.text.SetDebugUartMFP), (8 bytes).
+    Removing isp_system_m55m1.o(.text.SetDebugUartCLK), (54 bytes).
+    Removing isp_system_m55m1.o(.ARM.exidx.text.SetDebugUartCLK), (8 bytes).
+    Removing isp_system_m55m1.o(.text.InitDebugUart), (22 bytes).
+    Removing isp_system_m55m1.o(.ARM.exidx.text.InitDebugUart), (8 bytes).
+    Removing isp_system_m55m1.o(.ARM.exidx.text.SystemInit), (8 bytes).
+    Removing isp_system_m55m1.o(.bss.g_u32NonCacheableBase), (4 bytes).
+    Removing isp_system_m55m1.o(.bss.g_u32NonCacheableLimit), (4 bytes).
+    Removing clk.o(.text), (0 bytes).
+    Removing clk.o(.text.CLK_DisableCKO), (18 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_DisableCKO), (8 bytes).
+    Removing clk.o(.text.CLK_EnableCKO), (38 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_EnableCKO), (8 bytes).
+    Removing clk.o(.text.CLK_GetHXTFreq), (26 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetHXTFreq), (8 bytes).
+    Removing clk.o(.text.CLK_GetLXTFreq), (20 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetLXTFreq), (8 bytes).
+    Removing clk.o(.text.CLK_GetMIRCFreq), (38 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetMIRCFreq), (8 bytes).
+    Removing clk.o(.text.CLK_DisableMIRC), (18 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_DisableMIRC), (8 bytes).
+    Removing clk.o(.text.CLK_EnableMIRC), (124 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_EnableMIRC), (8 bytes).
+    Removing clk.o(.text.CLK_WaitClockReady), (76 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_WaitClockReady), (8 bytes).
+    Removing clk.o(.text.CLK_GetPCLK0Freq), (28 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetPCLK0Freq), (8 bytes).
+    Removing clk.o(.text.CLK_GetHCLK0Freq), (4 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetHCLK0Freq), (8 bytes).
+    Removing clk.o(.text.CLK_GetPCLK1Freq), (28 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetPCLK1Freq), (8 bytes).
+    Removing clk.o(.text.CLK_GetPCLK2Freq), (28 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetPCLK2Freq), (8 bytes).
+    Removing clk.o(.text.CLK_GetPCLK3Freq), (28 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetPCLK3Freq), (8 bytes).
+    Removing clk.o(.text.CLK_GetPCLK4Freq), (40 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetPCLK4Freq), (8 bytes).
+    Removing clk.o(.text.CLK_GetHCLK2Freq), (28 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetHCLK2Freq), (8 bytes).
+    Removing clk.o(.text.CLK_GetPCLK5Freq), (18 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetPCLK5Freq), (8 bytes).
+    Removing clk.o(.text.CLK_GetACLKFreq), (18 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetACLKFreq), (8 bytes).
+    Removing clk.o(.text.CLK_GetSCLKFreq), (18 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetSCLKFreq), (8 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_SystemClockUpdate), (8 bytes).
+    Removing clk.o(.text.CLK_GetHCLK1Freq), (4 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetHCLK1Freq), (8 bytes).
+    Removing clk.o(.text.CLK_SetCoreClock), (222 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_SetCoreClock), (8 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_EnableAPLL), (8 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_SetSCLK), (8 bytes).
+    Removing clk.o(.text.CLK_GetAPLL0ClockFreq), (130 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetAPLL0ClockFreq), (8 bytes).
+    Removing clk.o(.text.CLK_SetModuleClock), (110 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_SetModuleClock), (8 bytes).
+    Removing clk.o(.text.CLK_SetSysTickClockSrc), (20 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_SetSysTickClockSrc), (8 bytes).
+    Removing clk.o(.text.CLK_EnableXtalRC), (16 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_EnableXtalRC), (8 bytes).
+    Removing clk.o(.text.CLK_DisableXtalRC), (18 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_DisableXtalRC), (8 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_EnableModuleClock), (8 bytes).
+    Removing clk.o(.text.CLK_DisableModuleClock), (38 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_DisableModuleClock), (8 bytes).
+    Removing clk.o(.text.CLK_DisableAPLL), (30 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_DisableAPLL), (8 bytes).
+    Removing clk.o(.text.CLK_WaitClockDisable), (68 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_WaitClockDisable), (8 bytes).
+    Removing clk.o(.text.CLK_EnableSysTick), (94 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_EnableSysTick), (8 bytes).
+    Removing clk.o(.text.CLK_DisableSysTick), (14 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_DisableSysTick), (8 bytes).
+    Removing clk.o(.text.CLK_GetAPLL1ClockFreq), (130 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetAPLL1ClockFreq), (8 bytes).
+    Removing clk.o(.text.CLK_GetModuleClockSource), (34 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetModuleClockSource), (8 bytes).
+    Removing clk.o(.text.CLK_GetModuleClockDivider), (36 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_GetModuleClockDivider), (8 bytes).
+    Removing clk.o(.text.CLK_SetBusClock), (404 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_SetBusClock), (8 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_SysTickDelay), (8 bytes).
+    Removing clk.o(.text.CLK_SysTickLongDelay), (90 bytes).
+    Removing clk.o(.ARM.exidx.text.CLK_SysTickLongDelay), (8 bytes).
+    Removing sys.o(.text), (0 bytes).
+    Removing sys.o(.text.SYS_ResetModule), (90 bytes).
+    Removing sys.o(.ARM.exidx.text.SYS_ResetModule), (8 bytes).
+    Removing sys.o(.text.SYS_EnableBOD), (122 bytes).
+    Removing sys.o(.ARM.exidx.text.SYS_EnableBOD), (8 bytes).
+    Removing sys.o(.text.SYS_DisableBOD), (94 bytes).
+    Removing sys.o(.ARM.exidx.text.SYS_DisableBOD), (8 bytes).
+    Removing main.o(.text), (0 bytes).
+    Removing main.o(.ARM.exidx.text.SYS_Init), (8 bytes).
+    Removing main.o(.ARM.exidx.text.main), (8 bytes).
+    Removing main.o(.ARM.exidx.text.FMC_SetVectorPageAddr), (8 bytes).
+    Removing main.o(.ARM.exidx.text.__NVIC_SystemReset), (8 bytes).
+    Removing main.o(.ARM.use_no_argv), (4 bytes).
+    Removing spi_transfer.o(.text), (0 bytes).
+    Removing spi_transfer.o(.ARM.exidx.text.SPI_Init), (8 bytes).
+    Removing spi_transfer.o(.ARM.exidxITCM), (8 bytes).
+    Removing fmc_user.o(.text), (0 bytes).
+    Removing fmc_user.o(.text.FMC_Proc), (182 bytes).
+    Removing fmc_user.o(.ARM.exidx.text.FMC_Proc), (8 bytes).
+    Removing fmc_user.o(.text.FMC_Write_User), (150 bytes).
+    Removing fmc_user.o(.ARM.exidx.text.FMC_Write_User), (8 bytes).
+    Removing fmc_user.o(.ARM.exidx.text.FMC_Read_User), (8 bytes).
+    Removing fmc_user.o(.ARM.exidx.text.FMC_Erase_User), (8 bytes).
+    Removing fmc_user.o(.ARM.exidx.text.ReadData), (8 bytes).
+    Removing fmc_user.o(.ARM.exidx.text.WriteData), (8 bytes).
+    Removing fmc_user.o(.ARM.exidx.text.EraseAP), (8 bytes).
+    Removing fmc_user.o(.ARM.exidx.text.UpdateConfig), (8 bytes).
+    Removing isp_user.o(.text), (0 bytes).
+    Removing isp_user.o(.ARM.exidx.text.ParseCmd), (8 bytes).
+    Removing targetdev.o(.text), (0 bytes).
+    Removing targetdev.o(.text.UserMemCopy), (138 bytes).
+    Removing targetdev.o(.ARM.exidx.text.UserMemCopy), (8 bytes).
+    Removing targetdev.o(.ARM.exidx.text.GetApromSize), (8 bytes).
+
+124 unused section(s) (total 3490 bytes) removed from the image.
+
+==============================================================================
+
+Image Symbol Table
+
+    Local Symbols
+
+    Symbol Name                              Value     Ov Type        Size  Object(Section)
+
+    ../clib/microlib/cpp/cpp_init.c          0x00000000   Number         0  cpp_init.o ABSOLUTE
+    ../clib/microlib/cpp/cpp_init.c          0x00000000   Number         0  cpp_init.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry4.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry5.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry7a.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry7b.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry8a.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry8b.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry9a.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry9b.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry10a.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry10b.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry11a.o ABSOLUTE
+    ../clib/microlib/init/entry.s            0x00000000   Number         0  entry11b.o ABSOLUTE
+    ../clib/microlib/string/memset.c         0x00000000   Number         0  memseta.o ABSOLUTE
+    ../clib/r_arm_target.c                   0x00000000   Number         0  __ARM_resolve_target1.o ABSOLUTE
+    ../clib/r_arm_target.c                   0x00000000   Number         0  __ARM_resolve_target1_abs32.o ABSOLUTE
+    ISP_startup_M55M1.c                      0x00000000   Number         0  isp_startup_m55m1.o ABSOLUTE
+    ISP_system_M55M1.c                       0x00000000   Number         0  isp_system_m55m1.o ABSOLUTE
+    clk.c                                    0x00000000   Number         0  clk.o ABSOLUTE
+    dc.s                                     0x00000000   Number         0  dc.o ABSOLUTE
+    fmc_user.c                               0x00000000   Number         0  fmc_user.o ABSOLUTE
+    handlers.s                               0x00000000   Number         0  handlers.o ABSOLUTE
+    init.s                                   0x00000000   Number         0  init.o ABSOLUTE
+    isp_user.c                               0x00000000   Number         0  isp_user.o ABSOLUTE
+    main.c                                   0x00000000   Number         0  main.o ABSOLUTE
+    spi_transfer.c                           0x00000000   Number         0  spi_transfer.o ABSOLUTE
+    sys.c                                    0x00000000   Number         0  sys.o ABSOLUTE
+    targetdev.c                              0x00000000   Number         0  targetdev.o ABSOLUTE
+    [Anonymous Symbol]                       0x00000000   Section        0  spi_transfer.o(ITCM)
+    __tagsym$$used.0                         0x0f100000   Number         0  isp_startup_m55m1.o(RESET)
+    .ARM.Collect$$$$00000000                 0x0f100020   Section        0  entry.o(.ARM.Collect$$$$00000000)
+    .ARM.Collect$$$$00000003                 0x0f100020   Section        4  entry4.o(.ARM.Collect$$$$00000003)
+    .ARM.Collect$$$$00000004                 0x0f100024   Section        4  entry5.o(.ARM.Collect$$$$00000004)
+    .ARM.Collect$$$$00000008                 0x0f100028   Section        0  entry7b.o(.ARM.Collect$$$$00000008)
+    .ARM.Collect$$$$00000009                 0x0f100028   Section        4  entry8a.o(.ARM.Collect$$$$00000009)
+    .ARM.Collect$$$$0000000A                 0x0f10002c   Section        0  entry8b.o(.ARM.Collect$$$$0000000A)
+    .ARM.Collect$$$$0000000B                 0x0f10002c   Section        8  entry9a.o(.ARM.Collect$$$$0000000B)
+    __lit__00000000                          0x0f100034   Data           4  entry4.o(.ARM.Collect$$$$00002714)
+    .ARM.Collect$$$$0000000D                 0x0f100034   Section        0  entry10a.o(.ARM.Collect$$$$0000000D)
+    .ARM.Collect$$$$0000000F                 0x0f100034   Section        0  entry11a.o(.ARM.Collect$$$$0000000F)
+    .ARM.Collect$$$$00002714                 0x0f100034   Section        4  entry4.o(.ARM.Collect$$$$00002714)
+    .text                                    0x0f100038   Section        0  memseta.o(.text)
+    .text                                    0x0f10005c   Section        0  cpp_init.o(.text)
+    .text                                    0x0f100084   Section       48  init.o(.text)
+    [Anonymous Symbol]                       0x0f1000b4   Section        0  clk.o(.text.CLK_EnableAPLL)
+    [Anonymous Symbol]                       0x0f1004cc   Section        0  clk.o(.text.CLK_EnableModuleClock)
+    [Anonymous Symbol]                       0x0f1004f0   Section        0  clk.o(.text.CLK_SetSCLK)
+    [Anonymous Symbol]                       0x0f100864   Section        0  clk.o(.text.CLK_SysTickDelay)
+    [Anonymous Symbol]                       0x0f100a28   Section        0  clk.o(.text.CLK_SystemClockUpdate)
+    [Anonymous Symbol]                       0x0f100b00   Section        0  isp_startup_m55m1.o(.text.Default_Handler)
+    [Anonymous Symbol]                       0x0f100b04   Section        0  fmc_user.o(.text.EraseAP)
+    [Anonymous Symbol]                       0x0f100bc8   Section        0  fmc_user.o(.text.FMC_Erase_User)
+    [Anonymous Symbol]                       0x0f100c58   Section        0  fmc_user.o(.text.FMC_Read_User)
+    FMC_SetVectorPageAddr                    0x0f100cf1   Thumb Code   100  main.o(.text.FMC_SetVectorPageAddr)
+    [Anonymous Symbol]                       0x0f100cf0   Section        0  main.o(.text.FMC_SetVectorPageAddr)
+    [Anonymous Symbol]                       0x0f100d54   Section        0  targetdev.o(.text.GetApromSize)
+    [Anonymous Symbol]                       0x0f100d7c   Section        0  isp_startup_m55m1.o(.text.HardFault_Handler)
+    [Anonymous Symbol]                       0x0f100d80   Section        0  isp_user.o(.text.ParseCmd)
+    [Anonymous Symbol]                       0x0f101164   Section        0  fmc_user.o(.text.ReadData)
+    [Anonymous Symbol]                       0x0f1011f0   Section        0  isp_startup_m55m1.o(.text.Reset_Handler)
+    [Anonymous Symbol]                       0x0f101594   Section        0  spi_transfer.o(.text.SPI_Init)
+    [Anonymous Symbol]                       0x0f1015e0   Section        0  main.o(.text.SYS_Init)
+    [Anonymous Symbol]                       0x0f1016cc   Section        0  isp_system_m55m1.o(.text.SystemCoreClockUpdate)
+    [Anonymous Symbol]                       0x0f101700   Section        0  isp_system_m55m1.o(.text.SystemInit)
+    [Anonymous Symbol]                       0x0f101748   Section        0  fmc_user.o(.text.UpdateConfig)
+    [Anonymous Symbol]                       0x0f1018b8   Section        0  fmc_user.o(.text.WriteData)
+    __NVIC_SystemReset                       0x0f101945   Thumb Code    42  main.o(.text.__NVIC_SystemReset)
+    [Anonymous Symbol]                       0x0f101944   Section        0  main.o(.text.__NVIC_SystemReset)
+    [Anonymous Symbol]                       0x0f101970   Section        0  main.o(.text.main)
+    i.__scatterload_copy                     0x0f101a86   Section       14  handlers.o(i.__scatterload_copy)
+    i.__scatterload_null                     0x0f101a94   Section        2  handlers.o(i.__scatterload_null)
+    i.__scatterload_zeroinit                 0x0f101a96   Section       14  handlers.o(i.__scatterload_zeroinit)
+    .Lswitch.table.CLK_SystemClockUpdate     0x0f101aa4   Data          16  clk.o(.rodata.cst16)
+    .L__const.CLK_GetAPLL1ClockFreq.au8NoTbl 0x0f101ab4   Data           4  clk.o(.rodata.cst4)
+    .init_array                              0x0f101afc   Section        0  cpp_init.o(.init_array)
+    ParseCmd.u32PackNo                       0x20100004   Data           4  isp_user.o(.data.ParseCmd.u32PackNo)
+    [Anonymous Symbol]                       0x20100004   Section        0  isp_user.o(.data.ParseCmd.u32PackNo)
+    ParseCmd.u32Gcmd                         0x20100010   Data           4  isp_user.o(.bss.ParseCmd.u32Gcmd)
+    [Anonymous Symbol]                       0x20100010   Section        0  isp_user.o(.bss.ParseCmd.u32Gcmd)
+    ParseCmd.u32LastDataLen                  0x20100014   Data           4  isp_user.o(.bss.ParseCmd.u32LastDataLen)
+    [Anonymous Symbol]                       0x20100014   Section        0  isp_user.o(.bss.ParseCmd.u32LastDataLen)
+    ParseCmd.u32StartAddress                 0x20100018   Data           4  isp_user.o(.bss.ParseCmd.u32StartAddress)
+    [Anonymous Symbol]                       0x20100018   Section        0  isp_user.o(.bss.ParseCmd.u32StartAddress)
+    ParseCmd.u32StartAddress_bak             0x2010001c   Data           4  isp_user.o(.bss.ParseCmd.u32StartAddress_bak)
+    [Anonymous Symbol]                       0x2010001c   Section        0  isp_user.o(.bss.ParseCmd.u32StartAddress_bak)
+    ParseCmd.u32TotalLen                     0x20100020   Data           4  isp_user.o(.bss.ParseCmd.u32TotalLen)
+    [Anonymous Symbol]                       0x20100020   Section        0  isp_user.o(.bss.ParseCmd.u32TotalLen)
+    ParseCmd.u32TotalLen_bak                 0x20100024   Data           4  isp_user.o(.bss.ParseCmd.u32TotalLen_bak)
+    [Anonymous Symbol]                       0x20100024   Section        0  isp_user.o(.bss.ParseCmd.u32TotalLen_bak)
+    g_au8ApromBuf                            0x20100030   Data        8192  isp_user.o(.bss.g_au8ApromBuf)
+    [Anonymous Symbol]                       0x20100030   Section        0  isp_user.o(.bss.g_au8ApromBuf)
+    s_u32RxDataCount                         0x201020c0   Data           4  spi_transfer.o(.bss.s_u32RxDataCount)
+    [Anonymous Symbol]                       0x201020c0   Section        0  spi_transfer.o(.bss.s_u32RxDataCount)
+    s_u32TxDataCount                         0x201020c4   Data           4  spi_transfer.o(.bss.s_u32TxDataCount)
+    [Anonymous Symbol]                       0x201020c4   Section        0  spi_transfer.o(.bss.s_u32TxDataCount)
+
+    Global Symbols
+
+    Symbol Name                              Value     Ov Type        Size  Object(Section)
+
+    BuildAttributes$$THM_ISAv4$E$P$D$K$B$S$7EM$v8.1M$VFPv5_D16$PE$MVEf$A:L22UL41UL21$X:L11$S22US41US21$IEEE1$IW$USESV6$~STKCKD$USESV7$~SHL$OTIME$MICROLIB$REQ8$PRES8$EABIv2 0x00000000   Number         0  anon$$obj.o ABSOLUTE
+    SPI2_IRQHandler                          0x00000001   Thumb Code   282  spi_transfer.o(ITCM)
+    SCU_IRQHandler                            - Undefined Weak Reference
+    __cxa_finalize                            - Undefined Weak Reference
+    __decompress                              - Undefined Weak Reference
+    _clock_init                               - Undefined Weak Reference
+    _microlib_exit                            - Undefined Weak Reference
+    __Vectors                                0x0f100000   Data          32  isp_startup_m55m1.o(RESET)
+    __main                                   0x0f100021   Thumb Code     0  entry.o(.ARM.Collect$$$$00000000)
+    _main_stk                                0x0f100021   Thumb Code     0  entry4.o(.ARM.Collect$$$$00000003)
+    _main_scatterload                        0x0f100025   Thumb Code     0  entry5.o(.ARM.Collect$$$$00000004)
+    __main_after_scatterload                 0x0f100029   Thumb Code     0  entry5.o(.ARM.Collect$$$$00000004)
+    _main_clock                              0x0f100029   Thumb Code     0  entry7b.o(.ARM.Collect$$$$00000008)
+    _main_cpp_init$empty                     0x0f100029   Thumb Code     0  entry8a.o(.ARM.Collect$$$$00000009)
+    _main_cpp_init                           0x0f10002d   Thumb Code     0  entry8b.o(.ARM.Collect$$$$0000000A)
+    _main_init                               0x0f10002d   Thumb Code     0  entry9a.o(.ARM.Collect$$$$0000000B)
+    __rt_final_cpp                           0x0f100035   Thumb Code     0  entry10a.o(.ARM.Collect$$$$0000000D)
+    __rt_final_exit                          0x0f100035   Thumb Code     0  entry11a.o(.ARM.Collect$$$$0000000F)
+    __aeabi_memset                           0x0f100039   Thumb Code    14  memseta.o(.text)
+    __aeabi_memset4                          0x0f100039   Thumb Code     0  memseta.o(.text)
+    __aeabi_memset8                          0x0f100039   Thumb Code     0  memseta.o(.text)
+    __aeabi_memclr                           0x0f100047   Thumb Code     4  memseta.o(.text)
+    __aeabi_memclr4                          0x0f100047   Thumb Code     0  memseta.o(.text)
+    __aeabi_memclr8                          0x0f100047   Thumb Code     0  memseta.o(.text)
+    _memset$wrapper                          0x0f10004b   Thumb Code    18  memseta.o(.text)
+    __cpp_initialize__aeabi_                 0x0f10005d   Thumb Code    32  cpp_init.o(.text)
+    __scatterload                            0x0f100085   Thumb Code    38  init.o(.text)
+    __scatterload_rt2                        0x0f100085   Thumb Code     0  init.o(.text)
+    CLK_EnableAPLL                           0x0f1000b5   Thumb Code  1046  clk.o(.text.CLK_EnableAPLL)
+    CLK_EnableModuleClock                    0x0f1004cd   Thumb Code    36  clk.o(.text.CLK_EnableModuleClock)
+    CLK_SetSCLK                              0x0f1004f1   Thumb Code   882  clk.o(.text.CLK_SetSCLK)
+    CLK_SysTickDelay                         0x0f100865   Thumb Code   452  clk.o(.text.CLK_SysTickDelay)
+    CLK_SystemClockUpdate                    0x0f100a29   Thumb Code   196  clk.o(.text.CLK_SystemClockUpdate)
+    ACMP01_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    ACMP23_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    AWF_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    BODOUT_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    BPWM0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    BPWM1_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    BRAKE0_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    BRAKE1_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    BusFault_Handler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    CANFD00_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    CANFD01_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    CANFD10_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    CANFD11_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    CCAP_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    CKFAIL_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    CRC_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    CRYPTO_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    DAC01_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    DMIC0VAD_IRQHandler                      0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    DMIC0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    DebugMon_Handler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    Default_Handler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EADC00_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EADC01_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EADC02_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EADC03_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    ECAP0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    ECAP1_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    ECAP2_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    ECAP3_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EINT0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EINT1_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EINT2_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EINT3_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EINT4_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EINT5_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EINT6_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EINT7_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EMAC0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EPWM0P0_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EPWM0P1_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EPWM0P2_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EPWM1P0_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EPWM1P1_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EPWM1P2_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EQEI0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EQEI1_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EQEI2_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EQEI3_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    ETI_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    GDMACH0_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    GDMACH1_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    GPA_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    GPB_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    GPC_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    GPD_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    GPE_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    GPF_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    GPG_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    GPH_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    GPI_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    GPJ_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    HSOTG_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    HSUSBD_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    HSUSBH_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    I2C0_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    I2C1_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    I2C2_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    I2C3_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    I2S0_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    I2S1_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    I3C0_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    IRC_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    ISP_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    KPI_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    KS_IRQHandler                            0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    LPADC0_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    LPI2C0_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    LPPDMA_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    LPSPI0_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    LPTMR0_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    LPTMR1_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    LPUART0_IRQHandler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    MemManage_Handler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    NMI_Handler                              0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    NPU_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    OTFC0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    PDMA0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    PDMA1_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    PMC_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    PSIO_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    PendSV_Handler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    QSPI0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    QSPI1_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    RTCTAMPER_IRQHandler                     0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    RTC_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SC0_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SC1_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SC2_IRQHandler                           0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SDH0_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SDH1_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SPI0_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SPI1_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SPI3_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SPIM0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SRAMPERR_IRQHandler                      0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SVC_Handler                              0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SecureFault_Handler                      0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    SysTick_Handler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    TIMER0_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    TIMER1_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    TIMER2_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    TIMER3_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    TRNG_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    TTMR0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    TTMR1_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    UART0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    UART1_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    UART2_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    UART3_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    UART4_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    UART5_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    UART6_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    UART7_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    UART8_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    UART9_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    USBD_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    USBH0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    USBH1_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    USBOTG_IRQHandler                        0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    USCI0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    UTCPD_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    UsageFault_Handler                       0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    WDT0_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    WDT1_IRQHandler                          0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    WWDT0_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    WWDT1_IRQHandler                         0x0f100b01   Thumb Code     2  isp_startup_m55m1.o(.text.Default_Handler)
+    EraseAP                                  0x0f100b05   Thumb Code   194  fmc_user.o(.text.EraseAP)
+    FMC_Erase_User                           0x0f100bc9   Thumb Code   142  fmc_user.o(.text.FMC_Erase_User)
+    FMC_Read_User                            0x0f100c59   Thumb Code   150  fmc_user.o(.text.FMC_Read_User)
+    GetApromSize                             0x0f100d55   Thumb Code    40  targetdev.o(.text.GetApromSize)
+    HardFault_Handler                        0x0f100d7d   Thumb Code     2  isp_startup_m55m1.o(.text.HardFault_Handler)
+    ParseCmd                                 0x0f100d81   Thumb Code   996  isp_user.o(.text.ParseCmd)
+    ReadData                                 0x0f101165   Thumb Code   140  fmc_user.o(.text.ReadData)
+    Reset_Handler                            0x0f1011f1   Thumb Code   932  isp_startup_m55m1.o(.text.Reset_Handler)
+    SPI_Init                                 0x0f101595   Thumb Code    74  spi_transfer.o(.text.SPI_Init)
+    SYS_Init                                 0x0f1015e1   Thumb Code   236  main.o(.text.SYS_Init)
+    SystemCoreClockUpdate                    0x0f1016cd   Thumb Code    50  isp_system_m55m1.o(.text.SystemCoreClockUpdate)
+    SystemInit                               0x0f101701   Thumb Code    70  isp_system_m55m1.o(.text.SystemInit)
+    UpdateConfig                             0x0f101749   Thumb Code   368  fmc_user.o(.text.UpdateConfig)
+    WriteData                                0x0f1018b9   Thumb Code   140  fmc_user.o(.text.WriteData)
+    main                                     0x0f101971   Thumb Code   278  main.o(.text.main)
+    __scatterload_copy                       0x0f101a87   Thumb Code    14  handlers.o(i.__scatterload_copy)
+    __scatterload_null                       0x0f101a95   Thumb Code     2  handlers.o(i.__scatterload_null)
+    __scatterload_zeroinit                   0x0f101a97   Thumb Code    14  handlers.o(i.__scatterload_zeroinit)
+    Region$$Table$$Base                      0x0f101ab8   Number         0  anon$$obj.o(Region$$Table)
+    Region$$Table$$Limit                     0x0f101af8   Number         0  anon$$obj.o(Region$$Table)
+    SHT$$INIT_ARRAY$$Base                    0x0f101af8   Number         0  isp_system_m55m1.o(.init_array)
+    SHT$$INIT_ARRAY$$Limit                   0x0f101afc   Number         0  cpp_init.o(.init_array)
+    DTCM_VECTOR_TABLE                        0x20000000   Data         548  isp_startup_m55m1.o(DTCM.VTOR)
+    Image$$ARM_LIB_STACK$$ZI$$Base           0x2001f800   Number         0  anon$$obj.o ABSOLUTE
+    Image$$ARM_LIB_STACK$$ZI$$Limit          0x20020000   Number         0  anon$$obj.o ABSOLUTE
+    CyclesPerUs                              0x20100000   Data           4  isp_system_m55m1.o(.data.CyclesPerUs)
+    PllClock                                 0x20100008   Data           4  isp_system_m55m1.o(.data.PllClock)
+    SystemCoreClock                          0x2010000c   Data           4  isp_system_m55m1.o(.data.SystemCoreClock)
+    bSpiDataReady                            0x20100028   Data           1  spi_transfer.o(.bss.bSpiDataReady)
+    g_FMC_i32ErrCode                         0x2010002c   Data           4  fmc_user.o(.bss.g_FMC_i32ErrCode)
+    g_au8ResponseBuff                        0x20102030   Data         128  isp_user.o(.bss.g_au8ResponseBuff)
+    g_u32ApromSize                           0x201020b0   Data           4  targetdev.o(.bss.g_u32ApromSize)
+    g_u32DataFlashAddr                       0x201020b4   Data           4  isp_user.o(.bss.g_u32DataFlashAddr)
+    g_u32DataFlashSize                       0x201020b8   Data           4  isp_user.o(.bss.g_u32DataFlashSize)
+    g_u32UpdateApromCmd                      0x201020bc   Data           4  isp_user.o(.bss.g_u32UpdateApromCmd)
+    spi_rcvbuf                               0x201020c8   Data          64  spi_transfer.o(.bss.spi_rcvbuf)
+
+
+
+==============================================================================
+
+Memory Map of the image
+
+  Image Entry point : 0x0f100021
+
+  Load Region LR_ROM (Base: 0x0f100000, Size: 0x00001e4c, Max: 0x00002000, ABSOLUTE)
+
+    Execution Region ITCM (Exec base: 0x00000000, Load base: 0x0f101afc, Size: 0x0000011c, Max: 0x00010000, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x00000000   0x0f101afc   0x0000011a   Code   RO          167    ITCM                spi_transfer.o
+
+
+    Execution Region ER_ROM (Exec base: 0x0f100000, Load base: 0x0f100000, Size: 0x00001afc, Max: 0x00002000, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x0f100000   0x0f100000   0x00000020   Data   RO           10    RESET               isp_startup_m55m1.o
+    0x0f100020   0x0f100020   0x00000000   Code   RO          240  * .ARM.Collect$$$$00000000  mc_w.l(entry.o)
+    0x0f100020   0x0f100020   0x00000004   Code   RO          250    .ARM.Collect$$$$00000003  mc_w.l(entry4.o)
+    0x0f100024   0x0f100024   0x00000004   Code   RO          253    .ARM.Collect$$$$00000004  mc_w.l(entry5.o)
+    0x0f100028   0x0f100028   0x00000000   Code   RO          255    .ARM.Collect$$$$00000008  mc_w.l(entry7b.o)
+    0x0f100028   0x0f100028   0x00000004   Code   RO          256    .ARM.Collect$$$$00000009  mc_w.l(entry8a.o)
+    0x0f10002c   0x0f10002c   0x00000000   Code   RO          257    .ARM.Collect$$$$0000000A  mc_w.l(entry8b.o)
+    0x0f10002c   0x0f10002c   0x00000008   Code   RO          258    .ARM.Collect$$$$0000000B  mc_w.l(entry9a.o)
+    0x0f100034   0x0f100034   0x00000000   Code   RO          260    .ARM.Collect$$$$0000000D  mc_w.l(entry10a.o)
+    0x0f100034   0x0f100034   0x00000000   Code   RO          262    .ARM.Collect$$$$0000000F  mc_w.l(entry11a.o)
+    0x0f100034   0x0f100034   0x00000004   Code   RO          251    .ARM.Collect$$$$00002714  mc_w.l(entry4.o)
+    0x0f100038   0x0f100038   0x00000024   Code   RO          243    .text               mc_w.l(memseta.o)
+    0x0f10005c   0x0f10005c   0x00000028   Code   RO          248    .text               mc_w.l(cpp_init.o)
+    0x0f100084   0x0f100084   0x00000030   Code   RO          268    .text               mc_w.l(init.o)
+    0x0f1000b4   0x0f1000b4   0x00000416   Code   RO           86    .text.CLK_EnableAPLL  clk.o
+    0x0f1004ca   0x0f1004ca   0x00000002   PAD
+    0x0f1004cc   0x0f1004cc   0x00000024   Code   RO          100    .text.CLK_EnableModuleClock  clk.o
+    0x0f1004f0   0x0f1004f0   0x00000372   Code   RO           88    .text.CLK_SetSCLK   clk.o
+    0x0f100862   0x0f100862   0x00000002   PAD
+    0x0f100864   0x0f100864   0x000001c4   Code   RO          120    .text.CLK_SysTickDelay  clk.o
+    0x0f100a28   0x0f100a28   0x000000d8   Code   RO           80    .text.CLK_SystemClockUpdate  clk.o
+    0x0f100b00   0x0f100b00   0x00000002   Code   RO            4    .text.Default_Handler  isp_startup_m55m1.o
+    0x0f100b02   0x0f100b02   0x00000002   PAD
+    0x0f100b04   0x0f100b04   0x000000c2   Code   RO          193    .text.EraseAP       fmc_user.o
+    0x0f100bc6   0x0f100bc6   0x00000002   PAD
+    0x0f100bc8   0x0f100bc8   0x0000008e   Code   RO          187    .text.FMC_Erase_User  fmc_user.o
+    0x0f100c56   0x0f100c56   0x00000002   PAD
+    0x0f100c58   0x0f100c58   0x00000096   Code   RO          185    .text.FMC_Read_User  fmc_user.o
+    0x0f100cee   0x0f100cee   0x00000002   PAD
+    0x0f100cf0   0x0f100cf0   0x00000064   Code   RO          152    .text.FMC_SetVectorPageAddr  main.o
+    0x0f100d54   0x0f100d54   0x00000028   Code   RO          230    .text.GetApromSize  targetdev.o
+    0x0f100d7c   0x0f100d7c   0x00000002   Code   RO            8    .text.HardFault_Handler  isp_startup_m55m1.o
+    0x0f100d7e   0x0f100d7e   0x00000002   PAD
+    0x0f100d80   0x0f100d80   0x000003e4   Code   RO          206    .text.ParseCmd      isp_user.o
+    0x0f101164   0x0f101164   0x0000008c   Code   RO          189    .text.ReadData      fmc_user.o
+    0x0f1011f0   0x0f1011f0   0x000003a4   Code   RO            6    .text.Reset_Handler  isp_startup_m55m1.o
+    0x0f101594   0x0f101594   0x0000004a   Code   RO          165    .text.SPI_Init      spi_transfer.o
+    0x0f1015de   0x0f1015de   0x00000002   PAD
+    0x0f1015e0   0x0f1015e0   0x000000ec   Code   RO          148    .text.SYS_Init      main.o
+    0x0f1016cc   0x0f1016cc   0x00000032   Code   RO           20    .text.SystemCoreClockUpdate  isp_system_m55m1.o
+    0x0f1016fe   0x0f1016fe   0x00000002   PAD
+    0x0f101700   0x0f101700   0x00000046   Code   RO           28    .text.SystemInit    isp_system_m55m1.o
+    0x0f101746   0x0f101746   0x00000002   PAD
+    0x0f101748   0x0f101748   0x00000170   Code   RO          195    .text.UpdateConfig  fmc_user.o
+    0x0f1018b8   0x0f1018b8   0x0000008c   Code   RO          191    .text.WriteData     fmc_user.o
+    0x0f101944   0x0f101944   0x0000002a   Code   RO          154    .text.__NVIC_SystemReset  main.o
+    0x0f10196e   0x0f10196e   0x00000002   PAD
+    0x0f101970   0x0f101970   0x00000116   Code   RO          150    .text.main          main.o
+    0x0f101a86   0x0f101a86   0x0000000e   Code   RO          272    i.__scatterload_copy  mc_w.l(handlers.o)
+    0x0f101a94   0x0f101a94   0x00000002   Code   RO          273    i.__scatterload_null  mc_w.l(handlers.o)
+    0x0f101a96   0x0f101a96   0x0000000e   Code   RO          274    i.__scatterload_zeroinit  mc_w.l(handlers.o)
+    0x0f101aa4   0x0f101aa4   0x00000010   Data   RO          125    .rodata.cst16       clk.o
+    0x0f101ab4   0x0f101ab4   0x00000004   Data   RO          124    .rodata.cst4        clk.o
+    0x0f101ab8   0x0f101ab8   0x00000040   Data   RO          271    Region$$Table       anon$$obj.o
+    0x0f101af8   0x0f101af8   0x00000004   Data   RO           35    .init_array         isp_system_m55m1.o
+    0x0f101afc   0x0f101af8   0x00000000   Data   RO          246    .init_array         mc_w.l(cpp_init.o)
+
+
+    Execution Region DTCM_VTOR (Exec base: 0x20000000, Load base: 0x0f101c28, Size: 0x00000224, Max: 0xffffffff, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x20000000   0x0f101c28   0x00000224   Data   RO           11    DTCM.VTOR           isp_startup_m55m1.o
+
+
+    Execution Region DTCM (Exec base: 0x20000228, Load base: 0x0f101e4c, Size: 0x00000000, Max: 0xffffffff, ABSOLUTE)
+
+    **** No section assigned to this execution region ****
+
+
+    Execution Region ARM_LIB_STACK (Exec base: 0x2001f800, Load base: 0x0f101e4c, Size: 0x00000800, Max: 0x00000800, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x2001f800        -       0x00000800   Zero   RW            2    ARM_LIB_STACK.bss   anon$$obj.o
+
+
+    Execution Region RW_NOINIT (Exec base: 0x20100000, Load base: 0x0f101c18, Size: 0x00000000, Max: 0x0007f800, ABSOLUTE, UNINIT)
+
+    **** No section assigned to this execution region ****
+
+
+    Execution Region RW_RAM (Exec base: 0x20100000, Load base: 0x0f101c18, Size: 0x00002108, Max: 0xffffffff, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x20100000   0x0f101c18   0x00000004   Data   RW           31    .data.CyclesPerUs   isp_system_m55m1.o
+    0x20100004   0x0f101c1c   0x00000004   Data   RW          215    .data.ParseCmd.u32PackNo  isp_user.o
+    0x20100008   0x0f101c20   0x00000004   Data   RW           32    .data.PllClock      isp_system_m55m1.o
+    0x2010000c   0x0f101c24   0x00000004   Data   RW           30    .data.SystemCoreClock  isp_system_m55m1.o
+    0x20100010        -       0x00000004   Zero   RW          216    .bss.ParseCmd.u32Gcmd  isp_user.o
+    0x20100014        -       0x00000004   Zero   RW          214    .bss.ParseCmd.u32LastDataLen  isp_user.o
+    0x20100018        -       0x00000004   Zero   RW          210    .bss.ParseCmd.u32StartAddress  isp_user.o
+    0x2010001c        -       0x00000004   Zero   RW          211    .bss.ParseCmd.u32StartAddress_bak  isp_user.o
+    0x20100020        -       0x00000004   Zero   RW          212    .bss.ParseCmd.u32TotalLen  isp_user.o
+    0x20100024        -       0x00000004   Zero   RW          213    .bss.ParseCmd.u32TotalLen_bak  isp_user.o
+    0x20100028        -       0x00000001   Zero   RW          169    .bss.bSpiDataReady  spi_transfer.o
+    0x20100029   0x0f101c28   0x00000003   PAD
+    0x2010002c        -       0x00000004   Zero   RW          197    .bss.g_FMC_i32ErrCode  fmc_user.o
+    0x20100030        -       0x00002000   Zero   RW          219    .bss.g_au8ApromBuf  isp_user.o
+    0x20102030        -       0x00000080   Zero   RW          217    .bss.g_au8ResponseBuff  isp_user.o
+    0x201020b0        -       0x00000004   Zero   RW          232    .bss.g_u32ApromSize  targetdev.o
+    0x201020b4        -       0x00000004   Zero   RW          208    .bss.g_u32DataFlashAddr  isp_user.o
+    0x201020b8        -       0x00000004   Zero   RW          209    .bss.g_u32DataFlashSize  isp_user.o
+    0x201020bc        -       0x00000004   Zero   RW          218    .bss.g_u32UpdateApromCmd  isp_user.o
+    0x201020c0        -       0x00000004   Zero   RW          171    .bss.s_u32RxDataCount  spi_transfer.o
+    0x201020c4        -       0x00000004   Zero   RW          170    .bss.s_u32TxDataCount  spi_transfer.o
+    0x201020c8        -       0x00000040   Zero   RW          172    .bss.spi_rcvbuf     spi_transfer.o
+
+
+    Execution Region ARM_LIB_HEAP (Exec base: 0x20102108, Load base: 0x0f101c28, Size: 0x00000800, Max: 0x00000800, ABSOLUTE)
+
+    Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
+
+    0x20102108        -       0x00000800   Zero   RW            1    ARM_LIB_HEAP.bss    anon$$obj.o
+
+
+    Execution Region LPSRAM (Exec base: 0x20310000, Load base: 0x0f101e4c, Size: 0x00000000, Max: 0x00002000, ABSOLUTE)
+
+    **** No section assigned to this execution region ****
+
+
+==============================================================================
+
+Image component sizes
+
+
+      Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Object Name
+
+      2632         20         20          0          0      24196   clk.o
+      1134          0          0          0          4       9338   fmc_user.o
+       936          0        580          0          0       5092   isp_startup_m55m1.o
+       120          0          4         12          0       7499   isp_system_m55m1.o
+       996         86          0          4       8356       9977   isp_user.o
+       656          0          0          0          0      14802   main.o
+       356          0          0          0         73       5902   spi_transfer.o
+        40          0          0          0          4       2505   targetdev.o
+
+    ----------------------------------------------------------------------
+      6894        106        668         16      12536      79311   Object Totals
+         0          0         64          0       4096          0   (incl. Generated)
+        24          0          0          0          3          0   (incl. Padding)
+
+    ----------------------------------------------------------------------
+
+      Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Library Member Name
+
+        40          8          0          0          0         80   cpp_init.o
+         0          0          0          0          0          0   entry.o
+         0          0          0          0          0          0   entry10a.o
+         0          0          0          0          0          0   entry11a.o
+         8          4          0          0          0          0   entry4.o
+         4          0          0          0          0          0   entry5.o
+         0          0          0          0          0          0   entry7b.o
+         4          0          0          0          0          0   entry8a.o
+         0          0          0          0          0          0   entry8b.o
+         8          4          0          0          0          0   entry9a.o
+        30          0          0          0          0          0   handlers.o
+        48         10          0          0          0         68   init.o
+        36          0          0          0          0        108   memseta.o
+
+    ----------------------------------------------------------------------
+       178         26          0          0          0        256   Library Totals
+         0          0          0          0          0          0   (incl. Padding)
+
+    ----------------------------------------------------------------------
+
+      Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Library Name
+
+       178         26          0          0          0        256   mc_w.l
+
+    ----------------------------------------------------------------------
+       178         26          0          0          0        256   Library Totals
+
+    ----------------------------------------------------------------------
+
+==============================================================================
+
+
+      Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
+
+      7072        132        668         16      12536      79631   Grand Totals
+      7072        132        668         16      12536      79631   ELF Image Totals
+      7072        132        668         16          0          0   ROM Totals
+
+==============================================================================
+
+    Total RO  Size (Code + RO Data)                 7740 (   7.56kB)
+    Total RW  Size (RW Data + ZI Data)             12552 (  12.26kB)
+    Total ROM Size (Code + RO Data + RW Data)       7756 (   7.57kB)
+
+==============================================================================
+

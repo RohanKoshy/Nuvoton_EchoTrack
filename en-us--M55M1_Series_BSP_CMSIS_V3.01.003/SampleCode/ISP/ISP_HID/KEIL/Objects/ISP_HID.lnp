@@ -1,0 +1,16 @@
+--cpu=Cortex-M55 --fpu=FPv5_D16
+".\objects\isp_startup_m55m1.o"
+".\objects\isp_system_m55m1.o"
+".\objects\clk.o"
+".\objects\sys.o"
+".\objects\main.o"
+".\objects\descriptors.o"
+".\objects\hid_transfer.o"
+".\objects\usbd_user.o"
+".\objects\fmc_user.o"
+".\objects\isp_user.o"
+".\objects\targetdev.o"
+--library_type=microlib --strict --scatter "..\..\..\..\Library\Device\Nuvoton\M55M1\Source\ARM\M55M1-LDROM.scf"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Listings\ISP_HID.map" -o .\Objects\ISP_HID.axf

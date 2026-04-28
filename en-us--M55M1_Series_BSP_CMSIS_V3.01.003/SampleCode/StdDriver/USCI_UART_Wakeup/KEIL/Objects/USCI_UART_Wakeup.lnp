@@ -1,0 +1,15 @@
+--cpu=Cortex-M55 --fpu=FPv5_D16
+".\objects\startup_m55m1.o"
+".\objects\system_m55m1.o"
+".\objects\clk.o"
+".\objects\sys.o"
+".\objects\gpio.o"
+".\objects\retarget.o"
+".\objects\uart.o"
+".\objects\usci_uart.o"
+".\objects\pmc.o"
+".\objects\main.o"
+--library_type=microlib --strict --scatter "..\..\..\..\Library\Device\Nuvoton\M55M1\Source\ARM\M55M1.scf"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Listings\USCI_UART_Wakeup.map" -o .\Objects\USCI_UART_Wakeup.axf
