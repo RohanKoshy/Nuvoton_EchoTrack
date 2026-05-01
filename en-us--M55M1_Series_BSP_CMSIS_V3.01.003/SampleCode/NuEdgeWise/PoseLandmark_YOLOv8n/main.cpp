@@ -13,6 +13,7 @@
 #include "log_macros.h"
 #include "imlib.h"
 #include "framebuffer.h"
+//#include <intrins.h>
 
 #undef PI
 #include "NuMicro.h"
@@ -241,10 +242,12 @@ static void drain_audio(){
                 for (int n = 0; n < SAMPLES_PER_CALCULATION; n++) {
                     left_buffer[n]  = (float)lBuffer[n] / 8388608.0f;  /* 2^23 */
                     right_buffer[n] = (float)rBuffer[n] / 8388608.0f;
+									
 										if(n==0)
 										{
 											printf("L=%ld R=%ld\n", (long)lBuffer[BufferIndex], (long)rBuffer[BufferIndex]);
 										}
+									
                 }
 
                 float angle = doa_process_one_frame();
@@ -257,7 +260,7 @@ static void drain_audio(){
                 else {
                     g_state = STATE_SINGLE_SPEAKER;
                     //Servo_SetAngle(-angle);
-                    printf("DOA = %.2f deg\n", angle);
+                    //printf("DOA = %.2f deg\n", angle);
                 }
 
                 Frame_Index = 0;
@@ -282,19 +285,12 @@ static void drain_audio(){
 /* ================================================================== */
 /*  main — capture → detect → draw → display → DoA loop               */
 /* ================================================================== */
+
+extern "C" int nu_pdma_mempush(void *dest, void *src,uint32_t data_width, unsigned int transfer_count);
 int main()
 {
     BoardInit();
     info("main: BoardInit done\n");
-		printf("=== After BoardInit ===\n");
-		printf("SystemCoreClock = %u Hz\n", (unsigned)SystemCoreClock);
-		printf("HXT enabled=%u, HIRC enabled=%u\n",
-		(unsigned)((CLK->SRCCTL & CLK_SRCCTL_HXTEN_Msk)  ? 1 : 0),
-		(unsigned)((CLK->SRCCTL & CLK_SRCCTL_HIRCEN_Msk) ? 1 : 0));
-		printf("HXT stable=%u, HIRC stable=%u\n",
-		(unsigned)((CLK->STATUS & CLK_STATUS_HXTSTB_Msk)  ? 1 : 0),
-		(unsigned)((CLK->STATUS & CLK_STATUS_HIRCSTB_Msk) ? 1 : 0));
-		printf("CLK->I2SSEL = %08X\n", (unsigned)(CLK->I2SSEL));
     omv_init();
 
     image_t frameBuffer;
@@ -363,10 +359,28 @@ int main()
 
     /* --- DoA audio init (after BoardInit / camera / display) --- */
     //Servo_PWM_Init();
+		printf("=== Before priming ===\n");
+		printf("PDMA1 CHCTL=%08X REQSEL=%08X\n",(unsigned)PDMA1->CHCTL, (unsigned)PDMA1->REQSEL0_3);
+		static uint32_t dummy_src = 0xDEADBEEF;
+		static uint32_t dummy_dst = 0;
+		nu_pdma_mempush(&dummy_dst, &dummy_src, 32, 1);
+		
+		printf("=== After priming ===\n");
+		printf("PDMA1 CHCTL=%08X REQSEL=%08X\n",(unsigned)PDMA1->CHCTL, (unsigned)PDMA1->REQSEL0_3);
     Mic_Sys_Init();
     DoA_AudioPath_Init();
     doa_init();
-    info("main: DoA audio path initialised\n");
+		printf("=== After our PDMA init ===\n");
+		printf("PDMA1 CHCTL=%08X REQSEL=%08X NEXT[8]=%08X\n",(unsigned)PDMA1->CHCTL, (unsigned)PDMA1->REQSEL0_3,(unsigned)PDMA1->DSCT[15].NEXT);
+		printf("PDMA1 CHCTL=%08X REQSEL0_3=%08X REQSEL4_7=%08X REQSEL8_11=%08X NEXT[8]=%08X\n",(unsigned)PDMA1->CHCTL,(unsigned)PDMA1->REQSEL0_3,(unsigned)PDMA1->REQSEL4_7,(unsigned)PDMA1->REQSEL8_11,(unsigned)PDMA1->DSCT[15].NEXT);
+		printf("CHCTL=%08X\n", (unsigned)PDMA1->CHCTL);
+		printf("REQSEL0_3=%08X\n", (unsigned)PDMA1->REQSEL0_3);
+		printf("REQSEL4_7=%08X\n", (unsigned)PDMA1->REQSEL4_7);
+		printf("REQSEL8_11=%08X\n", (unsigned)PDMA1->REQSEL8_11);
+		printf("REQSEL12_15=%08X\n", (unsigned)PDMA1->REQSEL12_15);
+		printf("DSCT[15].NEXT=%08X\n", (unsigned)PDMA1->DSCT[15].NEXT);
+		printf("DSCT[15].CTL=%08X\n", (unsigned)PDMA1->DSCT[15].CTL);
+		
 
     /* DoA state machine (tracks silent vs. speaking transitions) */
     //doa_state_t doaState = STATE_SILENT;
@@ -441,8 +455,12 @@ int main()
 #if defined(__PROFILE__)
             u64StartCycle = pmu_get_systick_Count();
 #endif
+						//printf("PDMA1 BEFORE: REQSEL=%08X CHCTL=%08X TRGSTS=%08X NEXT=%08X\n",(unsigned)PDMA1->REQSEL0_3, (unsigned)PDMA1->CHCTL,(unsigned)PDMA1->TRGSTS, (unsigned)PDMA1->DSCT[8].NEXT);
             Display_FillRect((uint16_t *)infFramebuf->frameImage.data, &sDispRect,
                              IMAGE_DISP_UPSCALE_FACTOR);
+						//printf("PDMA1 AFTER:  REQSEL=%08X CHCTL=%08X TRGSTS=%08X NEXT=%08X\n",(unsigned)PDMA1->REQSEL0_3, (unsigned)PDMA1->CHCTL,(unsigned)PDMA1->TRGSTS, (unsigned)PDMA1->DSCT[8].NEXT);
+						//CLK_SysTickDelay(100000);
+						//PDMA_Init_For_I2S0_RX();
 #if defined(__PROFILE__)
             u64EndCycle = pmu_get_systick_Count();
             info("display image cycles %llu \n", (u64EndCycle - u64StartCycle));
@@ -492,9 +510,9 @@ int main()
             /* Frame-rate counter */
             u64PerfFrames++;
             if ((uint64_t)pmu_get_systick_Count() > u64PerfCycle) {
-                info("Total inference rate: %llu\n", u64PerfFrames / EACH_PERF_SEC);
+                //info("Total inference rate: %llu\n", u64PerfFrames / EACH_PERF_SEC);
 #if defined (__USE_DISPLAY__)
-                sprintf(szDisplayText, "Frame Rate %llu", u64PerfFrames / EACH_PERF_SEC);
+                //sprintf(szDisplayText, "Frame Rate %llu", u64PerfFrames / EACH_PERF_SEC);
 
                 sDispRect.u32TopLeftX = 0;
                 sDispRect.u32TopLeftY = frameBuffer.h * IMAGE_DISP_UPSCALE_FACTOR;
@@ -516,12 +534,7 @@ int main()
         }
 
 
-
-				static int dbg_iter = 0;
-				if ((dbg_iter++ % 100) == 0)
-				{
-					printf("audio check: g_NewFrame=%u Frame_Index=%u BufferIndex=%u\n", g_NewFrame, Frame_Index, BufferIndex); 
-				}/*
+/*
         while (g_NewFrame)
         {
             Frame_Index++;

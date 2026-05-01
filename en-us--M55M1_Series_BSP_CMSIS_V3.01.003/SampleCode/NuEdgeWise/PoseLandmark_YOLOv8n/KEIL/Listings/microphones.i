@@ -13306,27 +13306,23 @@ __attribute__((section("ITCM"))) void PDMA1_IRQHandler(void)
   uint32_t status = ((uint32_t)(((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->INTSTS));
 
 
-  static int irq_count = 0;
-  if (irq_count < 20) {
-   printf("IRQ#%d status=%08X abtsts=%08X tdsts=%08X\n",
-   irq_count++,(unsigned)status,(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->ABTSTS,(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->TDSTS);
-  }
+
 
     if (status & (0x1ul << (1)))
     {
         uint32_t td = ((uint32_t)(((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->TDSTS));
 
-        if (td & (1u << 2))
+        if (td & (1u << 15))
         {
 
             g_RxBufIdx ^= 1u;
             g_NewFrame = 1u;
 
 
-            ((uint32_t)(((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->TDSTS = ((1u << 2))));
+            ((uint32_t)(((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->TDSTS = ((1u << 15))));
         }
 
-    if (td & (1u << 3))
+    if (td & (1u << 15))
     {
       g_RxBufIdx1 ^= 1u;
       g_NewFrame1 = 1u;
@@ -13367,24 +13363,22 @@ void PDMA_Init_For_I2S0_RX(void)
     g_RxDesc_1.src = (uint32_t)&((I2S_T *) ((((uint32_t) 0x40000000UL) + 0x00250000UL) + 0x0A000UL))->RXFIFO;
     g_RxDesc_1.dest = (uint32_t)&g_PcmRxBuf[1][0];
     g_RxDesc_1.offset = (uint32_t)&g_RxDesc_0;
-    printf("desc0.ctl=%08X desc1.ctl=%08X (expect burst=1, single, scatter)\n",(unsigned)g_RxDesc_0.ctl, (unsigned)g_RxDesc_1.ctl);
 
-    PDMA_Open(((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL)), (1u << 2));
+
+    PDMA_Open(((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL)), (1u << 15));
 
     PDMA_SetTransferMode(((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL)),
-                         2,
+                         15,
                          57UL,
                          1,
                          (uint32_t)&g_RxDesc_0);
-  PDMA_DisableTimeout(((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL)), (1u << 2));
+  PDMA_DisableTimeout(((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL)), (1u << 15));
 
-    PDMA_EnableInt(((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL)), 2, 0x00000001UL);
+    PDMA_EnableInt(((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL)), 15, 0x00000001UL);
 
     __NVIC_EnableIRQ(PDMA1_IRQn);
 
 
-  PDMA_EnableInt(((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL)), 2, 0x00000001UL); __NVIC_EnableIRQ(PDMA1_IRQn); printf("desc0 @ %p: ctl=%08X src=%08X dst=%08X next=%08X\n", (void*)&g_RxDesc_0, (unsigned)g_RxDesc_0.ctl,(unsigned)g_RxDesc_0.src, (unsigned)g_RxDesc_0.dest, (unsigned)g_RxDesc_0.offset); printf("desc1 @ %p: ctl=%08X src=%08X dst=%08X next=%08X\n", (void*)&g_RxDesc_1, (unsigned)g_RxDesc_1.ctl,(unsigned)g_RxDesc_1.src, (unsigned)g_RxDesc_1.dest, (unsigned)g_RxDesc_1.offset); printf("PDMA1 ch2 NEXT=%08X CTL=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->DSCT[2].NEXT, (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->DSCT[2].CTL);
-  printf("REQSEL0_3=%08X TRGSTS=%08X CHCTL=%08X I2S0_CTL0=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL0_3, (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->TRGSTS, (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->CHCTL, (unsigned)((I2S_T *) ((((uint32_t) 0x40000000UL) + 0x00250000UL) + 0x0A000UL))->CTL0);
 }
 
 

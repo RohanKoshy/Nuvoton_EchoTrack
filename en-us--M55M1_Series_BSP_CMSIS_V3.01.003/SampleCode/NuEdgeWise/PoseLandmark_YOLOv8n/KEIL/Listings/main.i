@@ -34813,6 +34813,7 @@ char *framebuffer_get_buffers_end();
 # 16 "../main.cpp" 2
 
 
+
 # 1 "../../../../Library/Device/Nuvoton/M55M1/Include\\NuMicro.h" 1
 # 14 "../../../../Library/Device/Nuvoton/M55M1/Include\\NuMicro.h"
 # 1 "../../../../Library/Device/Nuvoton/M55M1/Include/M55M1.h" 1
@@ -46657,7 +46658,7 @@ void WWDT_Open(WWDT_T *wwdt, uint32_t u32PreScale, uint32_t u32CmpValue, uint32_
 
 }
 # 15 "../../../../Library/Device/Nuvoton/M55M1/Include\\NuMicro.h" 2
-# 19 "../main.cpp" 2
+# 20 "../main.cpp" 2
 
 # 1 "../../../../ThirdParty/ml-embedded-evaluation-kit/source/profiler/include\\Profiler.hpp" 1
 # 21 "../../../../ThirdParty/ml-embedded-evaluation-kit/source/profiler/include\\Profiler.hpp"
@@ -105188,7 +105189,7 @@ namespace app {
 
 }
 }
-# 21 "../main.cpp" 2
+# 22 "../main.cpp" 2
 # 1 "../Device/include\\ImageSensor.h" 1
 # 14 "../Device/include\\ImageSensor.h"
 extern "C" {
@@ -105219,7 +105220,7 @@ int ImageSensor_WaitCaptureDone(void);
 
 
 }
-# 22 "../main.cpp" 2
+# 23 "../main.cpp" 2
 
 
 
@@ -105239,7 +105240,7 @@ typedef struct dma_desc_t
 extern void PDMA_ResetTxSGTable(uint8_t id);
 extern void PDMA_ResetRxSGTable(uint8_t id);
 extern void PDMA_Init(void);
-# 29 "../main.cpp" 2
+# 30 "../main.cpp" 2
 # 1 "..//Keil/DoA.h" 1
 
 
@@ -105253,7 +105254,7 @@ void doa_run_synthetic_delay_test(void);
 
 extern float left_buffer[256];
 extern float right_buffer[256];
-# 30 "../main.cpp" 2
+# 31 "../main.cpp" 2
 # 1 "..//Keil/motor.h" 1
 
 
@@ -105266,7 +105267,7 @@ extern float right_buffer[256];
 # 8 "..//Keil/motor.h" 2
 void Servo_PWM_Init();
 void Servo_SetAngle(float angle);
-# 31 "../main.cpp" 2
+# 32 "../main.cpp" 2
 # 1 "..//Keil/microphones.h" 1
 
 
@@ -105326,7 +105327,7 @@ void PDMA_Init_For_I2S1_RX(void);
 
 
 }
-# 32 "../main.cpp" 2
+# 33 "../main.cpp" 2
 }
 
 
@@ -105377,8 +105378,8 @@ extern uint8_t Font8x16[];
 
 
 }
-# 40 "../main.cpp" 2
-# 51 "../main.cpp"
+# 41 "../main.cpp" 2
+# 52 "../main.cpp"
 typedef enum {
     eFRAMEBUF_EMPTY,
     eFRAMEBUF_FULL,
@@ -105415,7 +105416,7 @@ static S_FRAMEBUF *get_inf_framebuf()
         if (s_asFramebuf[i].eState == eFRAMEBUF_INF) return &s_asFramebuf[i];
     return 0;
 }
-# 114 "../main.cpp"
+# 115 "../main.cpp"
 __attribute__((section(".bss.vram.data"), aligned(32)))
 static char fb_array[((320 * 240 * 2) + 1024) + (1 * 1024)];
 
@@ -105488,7 +105489,7 @@ static void DoA_AudioPath_Init()
     (unsigned)actual0, (unsigned)48000U);
   printf("I2S0 CTL0=%08X CLKDIV=%08X\n",
     (unsigned)((I2S_T *) ((((uint32_t) 0x40000000UL) + 0x00250000UL) + 0x0A000UL))->CTL0, (unsigned)((I2S_T *) ((((uint32_t) 0x40000000UL) + 0x00250000UL) + 0x0A000UL))->CLKDIV);
-# 196 "../main.cpp"
+# 197 "../main.cpp"
     I2S_SetFIFO(((I2S_T *) ((((uint32_t) 0x40000000UL) + 0x00250000UL) + 0x0A000UL)),
                 (8U << (8)),
                 (7U << (16)));
@@ -105537,10 +105538,12 @@ static void drain_audio(){
                 for (int n = 0; n < 256; n++) {
                     left_buffer[n] = (float)lBuffer[n] / 8388608.0f;
                     right_buffer[n] = (float)rBuffer[n] / 8388608.0f;
+
           if(n==0)
           {
            printf("L=%ld R=%ld\n", (long)lBuffer[BufferIndex], (long)rBuffer[BufferIndex]);
           }
+
                 }
 
                 float angle = doa_process_one_frame();
@@ -105553,13 +105556,13 @@ static void drain_audio(){
                 else {
                     g_state = STATE_SINGLE_SPEAKER;
 
-                    printf("DOA = %.2f deg\n", angle);
+
                 }
 
                 Frame_Index = 0;
                 BufferIndex = 0;
             }
-# 276 "../main.cpp"
+# 279 "../main.cpp"
       asm volatile ("" ::: "memory");
 
         }
@@ -105569,19 +105572,12 @@ static void drain_audio(){
 
 
 
+
+extern "C" int nu_pdma_mempush(void *dest, void *src,uint32_t data_width, unsigned int transfer_count);
 int main()
 {
     BoardInit();
     printf("INFO - "); printf("main: BoardInit done\n");
-  printf("=== After BoardInit ===\n");
-  printf("SystemCoreClock = %u Hz\n", (unsigned)SystemCoreClock);
-  printf("HXT enabled=%u, HIRC enabled=%u\n",
-  (unsigned)((((CLK_T *) ((((uint32_t) 0x40000000UL) + 0x00000000UL) + 0x01000UL))->SRCCTL & (0x1ul << (4)))  ? 1 : 0),
-  (unsigned)((((CLK_T *) ((((uint32_t) 0x40000000UL) + 0x00000000UL) + 0x01000UL))->SRCCTL & (0x1ul << (3))) ? 1 : 0));
-  printf("HXT stable=%u, HIRC stable=%u\n",
-  (unsigned)((((CLK_T *) ((((uint32_t) 0x40000000UL) + 0x00000000UL) + 0x01000UL))->STATUS & (0x1ul << (4)))  ? 1 : 0),
-  (unsigned)((((CLK_T *) ((((uint32_t) 0x40000000UL) + 0x00000000UL) + 0x01000UL))->STATUS & (0x1ul << (3))) ? 1 : 0));
-  printf("CLK->I2SSEL = %08X\n", (unsigned)(((CLK_T *) ((((uint32_t) 0x40000000UL) + 0x00000000UL) + 0x01000UL))->I2SSEL));
     omv_init();
 
     image_t frameBuffer;
@@ -105641,12 +105637,29 @@ int main()
     S_DISP_RECT sDispRect;
     Display_Init();
     Display_ClearLCD(0xFFFF);
-# 366 "../main.cpp"
+# 362 "../main.cpp"
+  printf("=== Before priming ===\n");
+  printf("PDMA1 CHCTL=%08X REQSEL=%08X\n",(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->CHCTL, (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL0_3);
+  static uint32_t dummy_src = 0xDEADBEEF;
+  static uint32_t dummy_dst = 0;
+  nu_pdma_mempush(&dummy_dst, &dummy_src, 32, 1);
+
+  printf("=== After priming ===\n");
+  printf("PDMA1 CHCTL=%08X REQSEL=%08X\n",(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->CHCTL, (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL0_3);
     Mic_Sys_Init();
     DoA_AudioPath_Init();
     doa_init();
-    printf("INFO - "); printf("main: DoA audio path initialised\n");
-# 379 "../main.cpp"
+  printf("=== After our PDMA init ===\n");
+  printf("PDMA1 CHCTL=%08X REQSEL=%08X NEXT[8]=%08X\n",(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->CHCTL, (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL0_3,(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->DSCT[15].NEXT);
+  printf("PDMA1 CHCTL=%08X REQSEL0_3=%08X REQSEL4_7=%08X REQSEL8_11=%08X NEXT[8]=%08X\n",(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->CHCTL,(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL0_3,(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL4_7,(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL8_11,(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->DSCT[15].NEXT);
+  printf("CHCTL=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->CHCTL);
+  printf("REQSEL0_3=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL0_3);
+  printf("REQSEL4_7=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL4_7);
+  printf("REQSEL8_11=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL8_11);
+  printf("REQSEL12_15=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL12_15);
+  printf("DSCT[15].NEXT=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->DSCT[15].NEXT);
+  printf("DSCT[15].CTL=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->DSCT[15].CTL);
+# 393 "../main.cpp"
     pmu_reset_counters();
 
 
@@ -105712,14 +105725,15 @@ int main()
 
 
 
+
             Display_FillRect((uint16_t *)infFramebuf->frameImage.data, &sDispRect,
                              2);
-# 493 "../main.cpp"
+# 511 "../main.cpp"
             u64PerfFrames++;
             if ((uint64_t)pmu_get_systick_Count() > u64PerfCycle) {
-                printf("INFO - "); printf("Total inference rate: %llu\n", u64PerfFrames / 5);
 
-                sprintf(szDisplayText, "Frame Rate %llu", u64PerfFrames / 5);
+
+
 
                 sDispRect.u32TopLeftX = 0;
                 sDispRect.u32TopLeftY = frameBuffer.h * 2;
@@ -105739,15 +105753,7 @@ int main()
 
             infFramebuf->eState = eFRAMEBUF_EMPTY;
         }
-
-
-
-    static int dbg_iter = 0;
-    if ((dbg_iter++ % 100) == 0)
-    {
-     printf("audio check: g_NewFrame=%u Frame_Index=%u BufferIndex=%u\n", g_NewFrame, Frame_Index, BufferIndex);
-    }
-# 577 "../main.cpp"
+# 590 "../main.cpp"
     drain_audio();
     __builtin_arm_dsb(0xF);
     __builtin_arm_isb(0xF);
