@@ -105515,11 +105515,17 @@ static void DoA_AudioPath_Init()
 
 }
 
-static void drain_audio(){
- int boy=0;
- while (g_NewFrame)
-        {
-            Frame_Index++;
+
+
+
+
+static void doa_collect_and_process()
+{
+    Frame_Index = 0;
+    BufferIndex = 0;
+
+    while (Frame_Index < (256 / 32)) {
+        if (g_NewFrame) {
             __disable_irq();
             uint8_t buf = g_RxBufIdx ^ 1u;
             g_NewFrame = 0;
@@ -105530,50 +105536,34 @@ static void drain_audio(){
                 rBuffer[BufferIndex] = ((int32_t)g_PcmRxBuf[buf][i + 1]) >> 8;
                 BufferIndex++;
             }
-
-            if (Frame_Index >= (256 / 32)) {
-                Frame_Index = 0;
-                BufferIndex = 0;
-
-                for (int n = 0; n < 256; n++) {
-                    left_buffer[n] = (float)lBuffer[n] / 8388608.0f;
-                    right_buffer[n] = (float)rBuffer[n] / 8388608.0f;
-
-          if(n==0)
-          {
-           printf("L=%ld R=%ld\n", (long)lBuffer[BufferIndex], (long)rBuffer[BufferIndex]);
-          }
-
-                }
-
-                float angle = doa_process_one_frame();
-                if (angle == -180.0f) {
-                    if (g_state != STATE_SILENT) {
-                        printf("silent\n");
-                    }
-                    g_state = STATE_SILENT;
-                }
-                else {
-                    g_state = STATE_SINGLE_SPEAKER;
-
-
-                }
-
-                Frame_Index = 0;
-                BufferIndex = 0;
-            }
-# 279 "../main.cpp"
-      asm volatile ("" ::: "memory");
-
+            Frame_Index++;
         }
+    }
+
+    for (int n = 0; n < 256; n++) {
+        left_buffer[n] = (float)lBuffer[n] / 8388608.0f;
+        right_buffer[n] = (float)rBuffer[n] / 8388608.0f;
+    }
+
+    float angle = doa_process_one_frame();
+    if (angle == -180.0f) {
+        if (g_state != STATE_SILENT) {
+            printf("silent\n");
+        }
+        g_state = STATE_SILENT;
+    } else {
+        g_state = STATE_SINGLE_SPEAKER;
+
+    }
 }
 
 
 
 
 
+extern "C" int nu_pdma_mempush(void *dest, void *src,
+                                uint32_t data_width, unsigned int transfer_count);
 
-extern "C" int nu_pdma_mempush(void *dest, void *src,uint32_t data_width, unsigned int transfer_count);
 int main()
 {
     BoardInit();
@@ -105637,29 +105627,24 @@ int main()
     S_DISP_RECT sDispRect;
     Display_Init();
     Display_ClearLCD(0xFFFF);
-# 362 "../main.cpp"
-  printf("=== Before priming ===\n");
-  printf("PDMA1 CHCTL=%08X REQSEL=%08X\n",(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->CHCTL, (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL0_3);
-  static uint32_t dummy_src = 0xDEADBEEF;
-  static uint32_t dummy_dst = 0;
-  nu_pdma_mempush(&dummy_dst, &dummy_src, 32, 1);
+# 342 "../main.cpp"
+    {
+        static uint32_t dummy_src = 0xDEADBEEF;
+        static uint32_t dummy_dst = 0;
+        nu_pdma_mempush(&dummy_dst, &dummy_src, 32, 1);
+    }
 
-  printf("=== After priming ===\n");
-  printf("PDMA1 CHCTL=%08X REQSEL=%08X\n",(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->CHCTL, (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL0_3);
+
     Mic_Sys_Init();
     DoA_AudioPath_Init();
     doa_init();
-  printf("=== After our PDMA init ===\n");
-  printf("PDMA1 CHCTL=%08X REQSEL=%08X NEXT[8]=%08X\n",(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->CHCTL, (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL0_3,(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->DSCT[15].NEXT);
-  printf("PDMA1 CHCTL=%08X REQSEL0_3=%08X REQSEL4_7=%08X REQSEL8_11=%08X NEXT[8]=%08X\n",(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->CHCTL,(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL0_3,(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL4_7,(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL8_11,(unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->DSCT[15].NEXT);
-  printf("CHCTL=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->CHCTL);
-  printf("REQSEL0_3=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL0_3);
-  printf("REQSEL4_7=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL4_7);
-  printf("REQSEL8_11=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL8_11);
-  printf("REQSEL12_15=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->REQSEL12_15);
-  printf("DSCT[15].NEXT=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->DSCT[15].NEXT);
-  printf("DSCT[15].CTL=%08X\n", (unsigned)((PDMA_T *) ((((uint32_t) 0x40000000UL) + 0x00200000UL) + 0x01000UL))->DSCT[15].CTL);
-# 393 "../main.cpp"
+    printf("INFO - "); printf("main: DoA audio path initialised\n");
+
+
+
+
+
+
     pmu_reset_counters();
 
 
@@ -105681,11 +105666,12 @@ int main()
 
         emptyFramebuf = get_empty_framebuf();
         if (emptyFramebuf) {
-
-
-
             ImageSensor_TriggerCapture((uint32_t)(emptyFramebuf->frameImage.data));
         }
+
+
+
+        doa_collect_and_process();
 
 
         fullFramebuf = get_full_framebuf();
@@ -105702,9 +105688,6 @@ int main()
 
         infFramebuf = get_inf_framebuf();
         if (infFramebuf) {
-
-
-
             SpeakingDetector_Draw(
                 infFramebuf->frameImage.data,
                 infFramebuf->frameImage.w,
@@ -105712,28 +105695,16 @@ int main()
                 faceResults, numFaces);
 
 
-
-
-
-
-
             sDispRect.u32TopLeftX = 0;
             sDispRect.u32TopLeftY = 0;
             sDispRect.u32BottonRightX = ((frameBuffer.w * 2) - 1);
             sDispRect.u32BottonRightY = ((frameBuffer.h * 2) - 1);
 
-
-
-
-
             Display_FillRect((uint16_t *)infFramebuf->frameImage.data, &sDispRect,
                              2);
-# 511 "../main.cpp"
+# 458 "../main.cpp"
             u64PerfFrames++;
             if ((uint64_t)pmu_get_systick_Count() > u64PerfCycle) {
-
-
-
 
                 sDispRect.u32TopLeftX = 0;
                 sDispRect.u32TopLeftY = frameBuffer.h * 2;
@@ -105753,21 +105724,11 @@ int main()
 
             infFramebuf->eState = eFRAMEBUF_EMPTY;
         }
-# 590 "../main.cpp"
-    drain_audio();
-    __builtin_arm_dsb(0xF);
-    __builtin_arm_isb(0xF);
-
 
 
         if (emptyFramebuf) {
             ImageSensor_WaitCaptureDone();
-
-
-
-
             emptyFramebuf->eState = eFRAMEBUF_FULL;
-
         }
     }
 

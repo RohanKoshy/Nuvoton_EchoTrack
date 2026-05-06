@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\PoseLandmark.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\PoseLandmark.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6210000: Last Updated: Fri May  1 12:54:36 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6210000: Last Updated: Tue May  5 18:41:42 2026
 <BR><P>
 <H3>Maximum Stack Usage =       1200 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -3367,12 +3367,12 @@ Global Symbols
 <LI><a href="#[261]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm::app::Model::LogTensorInfo(TfLiteTensor*)
 <LI><a href="#[24c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;operator delete(void*, unsigned int)
 <LI><a href="#[24b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;operator new(unsigned int)
+<LI><a href="#[269]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;std::__2::basic_string&lang;char, std::__2::char_traits&lang;char&rang;, std::__2::allocator&lang;char&rang;&rang;::__throw_length_error[abi:v180000]() const
 <LI><a href="#[268]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memmove
 <LI><a href="#[267]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 <LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_assert
 <LI><a href="#[180]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;puts
 <LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
-<LI><a href="#[269]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;std::__2::basic_string&lang;char, std::__2::char_traits&lang;char&rang;, std::__2::allocator&lang;char&rang;&rang;::__throw_length_error[abi:v180000]() const
 </UL>
 <BR>[Called By]<UL><LI><a href="#[238]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm::app::Model::Init(unsigned char*, unsigned int, unsigned char const*, unsigned int, tflite::MicroAllocator*)
 </UL>
@@ -3973,7 +3973,7 @@ Global Symbols
 <P><STRONG><a name="[2]"></a>lt7381_write_reg</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, lcd_lt7381.o(.text.lt7381_write_reg))
 <BR>[Address Reference Count : 1]<UL><LI> lcd_lt7381.o(.data.g_s_WVGA_LT7381)
 </UL>
-<P><STRONG><a name="[163]"></a>main</STRONG> (Thumb, 2000 bytes, Stack size 312 bytes, main.o(.text.main))
+<P><STRONG><a name="[163]"></a>main</STRONG> (Thumb, 1888 bytes, Stack size 312 bytes, main.o(.text.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 1200 + Unknown Stack Size
 <LI>Call Chain = main &rArr; SpeakingDetector_RunFrame(unsigned char*, int, int, SpeakingFaceResult*, int) &rArr; arm::app::Model::RunInference() &rArr; tflite::MicroInterpreter::Invoke() &rArr; tflite::MicroInterpreter::AllocateTensors() &rArr; tflite::MicroInterpreter::PrepareNodeAndRegistrationDataFromFlatbuffer() &rArr; tflite::GetRegistrationFromOpCode(tflite::OperatorCode const*, tflite::MicroOpResolver const&, TFLMRegistration const**) &rArr; MicroPrintf(char const*, ...) &rArr; (anonymous namespace)::VDebugLog(char const*, ...) &rArr; DebugLog &rArr; vsnprintf &rArr; _printf_char_common &rArr; __printf
 </UL>
@@ -3982,12 +3982,12 @@ Global Symbols
 <LI><a href="#[22e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;InitPreDefMPURegion
 <LI><a href="#[1d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLK_SetModuleClock
 <LI><a href="#[2a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ImageSensor_WaitCaptureDone
-<LI><a href="#[293]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;doa_process_one_frame
 <LI><a href="#[2a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Display_PutText
 <LI><a href="#[2a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Display_ClearRect
 <LI><a href="#[1dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Display_FillRect
 <LI><a href="#[231]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SpeakingDetector_Draw(unsigned char*, int, int, SpeakingFaceResult const*, int)
 <LI><a href="#[241]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SpeakingDetector_RunFrame(unsigned char*, int, int, SpeakingFaceResult*, int)
+<LI><a href="#[293]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;doa_process_one_frame
 <LI><a href="#[2a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ImageSensor_TriggerCapture
 <LI><a href="#[1dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pmu_get_systick_Count
 <LI><a href="#[1df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pmu_reset_counters
@@ -4069,8 +4069,8 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[1dc]"></a>pmu_get_systick_Count</STRONG> (Thumb, 38 bytes, Stack size 0 bytes, pmu_counter.o(.text.pmu_get_systick_Count))
-<BR><BR>[Called By]<UL><LI><a href="#[163]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-<LI><a href="#[1db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Display_Delay
+<BR><BR>[Called By]<UL><LI><a href="#[1db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Display_Delay
+<LI><a href="#[163]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
 <P><STRONG><a name="[1df]"></a>pmu_reset_counters</STRONG> (Thumb, 160 bytes, Stack size 8 bytes, pmu_counter.o(.text.pmu_reset_counters))

@@ -219,11 +219,17 @@ static void DoA_AudioPath_Init()
     //I2S_ENABLE_TX(I2S1);
 }
 
-static void drain_audio(){
-	int boy=0;
-	while (g_NewFrame)
-        {
-            Frame_Index++;
+/* ------------------------------------------------------------------ */
+/*  Collect one full 256-sample DoA frame and process it.              */
+/*  Blocks until 8 PDMA buffers have been collected contiguously.      */
+/* ------------------------------------------------------------------ */
+static void doa_collect_and_process()
+{
+    Frame_Index = 0;
+    BufferIndex = 0;
+
+    while (Frame_Index < BLOCKS_PER_CALCULATION) {
+        if (g_NewFrame) {
             __disable_irq();
             uint8_t buf = g_RxBufIdx ^ 1u;
             g_NewFrame = 0;
@@ -234,59 +240,34 @@ static void drain_audio(){
                 rBuffer[BufferIndex] = ((int32_t)g_PcmRxBuf[buf][i + 1]) >> 8;
                 BufferIndex++;
             }
-
-            if (Frame_Index >= BLOCKS_PER_CALCULATION) {
-                Frame_Index = 0;
-                BufferIndex = 0;
-
-                for (int n = 0; n < SAMPLES_PER_CALCULATION; n++) {
-                    left_buffer[n]  = (float)lBuffer[n] / 8388608.0f;  /* 2^23 */
-                    right_buffer[n] = (float)rBuffer[n] / 8388608.0f;
-									
-										if(n==0)
-										{
-											printf("L=%ld R=%ld\n", (long)lBuffer[BufferIndex], (long)rBuffer[BufferIndex]);
-										}
-									
-                }
-
-                float angle = doa_process_one_frame();
-                if (angle == -180.0f) {
-                    if (g_state != STATE_SILENT) {
-                        printf("silent\n");
-                    }
-                    g_state = STATE_SILENT;
-                }
-                else {
-                    g_state = STATE_SINGLE_SPEAKER;
-                    //Servo_SetAngle(-angle);
-                    //printf("DOA = %.2f deg\n", angle);
-                }
-
-                Frame_Index = 0;
-                BufferIndex = 0;
-            }
-						//printf("x\n"); ml works doa doesn't 
-						//printf("gFrame at end: %u\n",g_NewFrame); //doa works ml doesn't
-						//printf("gFrame at end: %u",boy); doa doesn't work ml does
-						//printf("gFrame at end: %u\n",boy); doa works ml doesn't
-						/*
-						printf("x\n");
-						printf("x\n");
-						printf("x\n");
-						printf("x\n");
-						*/
-						asm volatile ("" ::: "memory");
-						
+            Frame_Index++;
         }
+    }
+
+    for (int n = 0; n < SAMPLES_PER_CALCULATION; n++) {
+        left_buffer[n]  = (float)lBuffer[n] / 8388608.0f;
+        right_buffer[n] = (float)rBuffer[n] / 8388608.0f;
+    }
+
+    float angle = doa_process_one_frame();
+    if (angle == -180.0f) {
+        if (g_state != STATE_SILENT) {
+            printf("silent\n");
+        }
+        g_state = STATE_SILENT;
+    } else {
+        g_state = STATE_SINGLE_SPEAKER;
+        //Servo_SetAngle(-angle);
+    }
 }
 
 
 /* ================================================================== */
-/*  main — capture → detect → draw → display → DoA loop               */
+/*  main — capture → DoA → ML → display loop                          */
 /* ================================================================== */
+extern "C" int nu_pdma_mempush(void *dest, void *src,
+                                uint32_t data_width, unsigned int transfer_count);
 
-extern "C" int nu_pdma_mempush(void *dest, void *src,uint32_t data_width, unsigned int transfer_count);
 int main()
 {
     BoardInit();
@@ -335,7 +316,7 @@ int main()
     }
 
     /* --- Initialise the speaking detector module --- */
-    int rc = SpeakingDetector_Init(NULL);  /* NULL = use defaults */
+    int rc = SpeakingDetector_Init(NULL);
     if (rc != 0) {
         printf_err("SpeakingDetector_Init failed (%d)\n", rc);
         return 1;
@@ -357,33 +338,18 @@ int main()
     HSUSBD_Start();
 #endif
 
-    /* --- DoA audio init (after BoardInit / camera / display) --- */
-    //Servo_PWM_Init();
-		printf("=== Before priming ===\n");
-		printf("PDMA1 CHCTL=%08X REQSEL=%08X\n",(unsigned)PDMA1->CHCTL, (unsigned)PDMA1->REQSEL0_3);
-		static uint32_t dummy_src = 0xDEADBEEF;
-		static uint32_t dummy_dst = 0;
-		nu_pdma_mempush(&dummy_dst, &dummy_src, 32, 1);
-		
-		printf("=== After priming ===\n");
-		printf("PDMA1 CHCTL=%08X REQSEL=%08X\n",(unsigned)PDMA1->CHCTL, (unsigned)PDMA1->REQSEL0_3);
+    /* --- Prime BSP PDMA framework before claiming our channel --- */
+    {
+        static uint32_t dummy_src = 0xDEADBEEF;
+        static uint32_t dummy_dst = 0;
+        nu_pdma_mempush(&dummy_dst, &dummy_src, 32, 1);
+    }
+
+    /* --- DoA audio init (after BoardInit / camera / display / PDMA prime) --- */
     Mic_Sys_Init();
     DoA_AudioPath_Init();
     doa_init();
-		printf("=== After our PDMA init ===\n");
-		printf("PDMA1 CHCTL=%08X REQSEL=%08X NEXT[8]=%08X\n",(unsigned)PDMA1->CHCTL, (unsigned)PDMA1->REQSEL0_3,(unsigned)PDMA1->DSCT[15].NEXT);
-		printf("PDMA1 CHCTL=%08X REQSEL0_3=%08X REQSEL4_7=%08X REQSEL8_11=%08X NEXT[8]=%08X\n",(unsigned)PDMA1->CHCTL,(unsigned)PDMA1->REQSEL0_3,(unsigned)PDMA1->REQSEL4_7,(unsigned)PDMA1->REQSEL8_11,(unsigned)PDMA1->DSCT[15].NEXT);
-		printf("CHCTL=%08X\n", (unsigned)PDMA1->CHCTL);
-		printf("REQSEL0_3=%08X\n", (unsigned)PDMA1->REQSEL0_3);
-		printf("REQSEL4_7=%08X\n", (unsigned)PDMA1->REQSEL4_7);
-		printf("REQSEL8_11=%08X\n", (unsigned)PDMA1->REQSEL8_11);
-		printf("REQSEL12_15=%08X\n", (unsigned)PDMA1->REQSEL12_15);
-		printf("DSCT[15].NEXT=%08X\n", (unsigned)PDMA1->DSCT[15].NEXT);
-		printf("DSCT[15].CTL=%08X\n", (unsigned)PDMA1->DSCT[15].CTL);
-		
-
-    /* DoA state machine (tracks silent vs. speaking transitions) */
-    //doa_state_t doaState = STATE_SILENT;
+    info("main: DoA audio path initialised\n");
 
 #if defined(__PROFILE__)
     arm::app::Profiler profiler;
@@ -408,16 +374,17 @@ int main()
     /* ---- Main loop ---- */
     while (1)
     {
-        /* 1. Trigger capture into an empty buffer */
+        /* 1. Trigger camera capture (runs in parallel via CCAP hardware) */
         emptyFramebuf = get_empty_framebuf();
         if (emptyFramebuf) {
-#if defined(__PROFILE__)
-            u64CCAPStartCycle = pmu_get_systick_Count();
-#endif
             ImageSensor_TriggerCapture((uint32_t)(emptyFramebuf->frameImage.data));
         }
 
-        /* 2. Run ML on a full buffer */
+        /* 2. Collect + process one DoA frame on contiguous audio (~5.5 ms).
+         *    Camera capture continues in parallel during this. */
+        doa_collect_and_process();
+
+        /* 3. Run ML on a full buffer */
         fullFramebuf = get_full_framebuf();
         if (fullFramebuf) {
             numFaces = SpeakingDetector_RunFrame(
@@ -429,22 +396,14 @@ int main()
             fullFramebuf->eState = eFRAMEBUF_INF;
         }
 
-        // 3. Draw + display an inference-done buffer 
+        /* 4. Draw + display an inference-done buffer */
         infFramebuf = get_inf_framebuf();
         if (infFramebuf) {
-#if defined(__PROFILE__)
-            u64StartCycle = pmu_get_systick_Count();
-#endif
             SpeakingDetector_Draw(
                 infFramebuf->frameImage.data,
                 infFramebuf->frameImage.w,
                 infFramebuf->frameImage.h,
                 faceResults, numFaces);
-
-#if defined(__PROFILE__)
-            u64EndCycle = pmu_get_systick_Count();
-            info("draw cycles %llu \n", (u64EndCycle - u64StartCycle));
-#endif
 
 #if defined (__USE_DISPLAY__)
             sDispRect.u32TopLeftX = 0;
@@ -452,21 +411,9 @@ int main()
             sDispRect.u32BottonRightX = ((frameBuffer.w * IMAGE_DISP_UPSCALE_FACTOR) - 1);
             sDispRect.u32BottonRightY = ((frameBuffer.h * IMAGE_DISP_UPSCALE_FACTOR) - 1);
 
-#if defined(__PROFILE__)
-            u64StartCycle = pmu_get_systick_Count();
-#endif
-						//printf("PDMA1 BEFORE: REQSEL=%08X CHCTL=%08X TRGSTS=%08X NEXT=%08X\n",(unsigned)PDMA1->REQSEL0_3, (unsigned)PDMA1->CHCTL,(unsigned)PDMA1->TRGSTS, (unsigned)PDMA1->DSCT[8].NEXT);
             Display_FillRect((uint16_t *)infFramebuf->frameImage.data, &sDispRect,
                              IMAGE_DISP_UPSCALE_FACTOR);
-						//printf("PDMA1 AFTER:  REQSEL=%08X CHCTL=%08X TRGSTS=%08X NEXT=%08X\n",(unsigned)PDMA1->REQSEL0_3, (unsigned)PDMA1->CHCTL,(unsigned)PDMA1->TRGSTS, (unsigned)PDMA1->DSCT[8].NEXT);
-						//CLK_SysTickDelay(100000);
-						//PDMA_Init_For_I2S0_RX();
-#if defined(__PROFILE__)
-            u64EndCycle = pmu_get_systick_Count();
-            info("display image cycles %llu \n", (u64EndCycle - u64StartCycle));
 #endif
-#endif // __USE_DISPLAY__
-
 
 #if defined (__USE_UVC__)
             if (UVC_IsConnect()) {
@@ -510,10 +457,7 @@ int main()
             /* Frame-rate counter */
             u64PerfFrames++;
             if ((uint64_t)pmu_get_systick_Count() > u64PerfCycle) {
-                //info("Total inference rate: %llu\n", u64PerfFrames / EACH_PERF_SEC);
 #if defined (__USE_DISPLAY__)
-                //sprintf(szDisplayText, "Frame Rate %llu", u64PerfFrames / EACH_PERF_SEC);
-
                 sDispRect.u32TopLeftX = 0;
                 sDispRect.u32TopLeftY = frameBuffer.h * IMAGE_DISP_UPSCALE_FACTOR;
                 sDispRect.u32BottonRightX = (frameBuffer.w);
@@ -533,76 +477,13 @@ int main()
             infFramebuf->eState = eFRAMEBUF_EMPTY;
         }
 
-
-/*
-        while (g_NewFrame)
-        {
-            Frame_Index++;
-            __disable_irq();
-            uint8_t buf = g_RxBufIdx ^ 1u;
-            g_NewFrame = 0;
-            __enable_irq();
-
-            for (int i = 0; i < BUFF_LEN_1; i += 2) {
-                lBuffer[BufferIndex] = ((int32_t)g_PcmRxBuf[buf][i])     >> 8;
-                rBuffer[BufferIndex] = ((int32_t)g_PcmRxBuf[buf][i + 1]) >> 8;
-                BufferIndex++;
-            }
-
-            if (Frame_Index >= BLOCKS_PER_CALCULATION) {
-                Frame_Index = 0;
-                BufferIndex = 0;
-
-                for (int n = 0; n < SAMPLES_PER_CALCULATION; n++) {
-                    left_buffer[n]  = (float)lBuffer[n] / 8388608.0f;  
-                    right_buffer[n] = (float)rBuffer[n] / 8388608.0f;
-										if(n==0)
-										{
-											printf("L=%ld R=%ld\n", (long)lBuffer[BufferIndex], (long)rBuffer[BufferIndex]);
-										}
-                }
-
-                float angle = doa_process_one_frame();
-                if (angle == -180.0f) {
-                    if (doaState != STATE_SILENT) {
-                        printf("silent\n");
-                    }
-                    doaState = STATE_SILENT;
-                }
-                else {
-                    doaState = STATE_SINGLE_SPEAKER;
-                    //Servo_SetAngle(-angle);
-                    printf("DOA = %.2f deg\n", angle);
-                }
-
-                Frame_Index = 0;
-                BufferIndex = 0;
-            }
-						//printf("x\n");
-						//volatile uint8_t sink=g_NewFrame;
-						//(void)sink;
-						//printf("gFrame at end: %u\n",g_NewFrame);
-						//printf("gFrame at end: %u\n",doaState);
-						asm volatile ("" ::: "memory");
-						
-        }
-				*/
-				drain_audio();
-				__DSB();
-				__ISB();
-				//printf("came here\n");
-
-        /* 4. Wait for camera capture to finish */
+        /* 5. Wait for camera capture to finish */
         if (emptyFramebuf) {
             ImageSensor_WaitCaptureDone();
-#if defined(__PROFILE__)
-            u64CCAPEndCycle = pmu_get_systick_Count();
-            info("ccap capture cycles %llu \n", (u64CCAPEndCycle - u64CCAPStartCycle));
-#endif
             emptyFramebuf->eState = eFRAMEBUF_FULL;
-				
         }
     }
 
     return 0;
 }
+
