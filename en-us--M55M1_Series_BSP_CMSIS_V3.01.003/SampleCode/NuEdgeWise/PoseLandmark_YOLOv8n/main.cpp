@@ -349,6 +349,9 @@ int main()
     Mic_Sys_Init();
     DoA_AudioPath_Init();
     doa_init();
+    NVIC_ClearPendingIRQ(PDMA1_IRQn);
+    NVIC_EnableIRQ(PDMA1_IRQn);
+    __enable_irq();
     info("main: DoA audio path initialised\n");
 
 #if defined(__PROFILE__)
