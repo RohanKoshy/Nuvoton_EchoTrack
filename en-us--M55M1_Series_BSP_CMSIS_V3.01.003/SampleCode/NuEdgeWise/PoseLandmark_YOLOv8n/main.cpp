@@ -279,10 +279,10 @@ int main()
 
     /* --- MPU setup (tensor arenas + frame buffers, one call) --- */
     {
-        void *faceArena, *mouthArena;
-        uint32_t faceSize, mouthSize;
+        void *faceArena, *landmarkArena;
+        uint32_t faceSize, landmarkSize;
         SpeakingDetector_GetTensorArenas(&faceArena, &faceSize,
-                                         &mouthArena, &mouthSize);
+                                         &landmarkArena, &landmarkSize);
 
         const std::vector<ARM_MPU_Region_t> mpuConfig = {
             {
@@ -292,9 +292,9 @@ int main()
                              eMPU_ATTR_CACHEABLE_WTRA)
             },
             {
-                ARM_MPU_RBAR((unsigned int)mouthArena,
+                ARM_MPU_RBAR((unsigned int)landmarkArena,
                              ARM_MPU_SH_NON, 0, 1, 1),
-                ARM_MPU_RLAR((unsigned int)mouthArena + mouthSize - 1,
+                ARM_MPU_RLAR((unsigned int)landmarkArena + landmarkSize - 1,
                              eMPU_ATTR_CACHEABLE_WTRA)
             },
             {

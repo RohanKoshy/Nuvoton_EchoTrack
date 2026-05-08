@@ -510,19 +510,14 @@
               <FilePath>..\mpu_config_M55M1.h</FilePath>
             </File>
             <File>
-              <FileName>ModelFileReader.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ModelFileReader.c</FilePath>
-            </File>
-            <File>
-              <FileName>MouthYOLOv8PostProcessing.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\MouthYOLOv8PostProcessing.cpp</FilePath>
-            </File>
-            <File>
               <FileName>FaceDetectorPostProcessing.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\FaceDetectorPostProcessing.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>FaceLandmarkPostProcessing.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\FaceLandmarkPostProcessing.cpp</FilePath>
             </File>
             <File>
               <FileName>SpeakingDetector.cpp</FileName>
@@ -560,19 +555,24 @@
           <GroupName>Model</GroupName>
           <Files>
             <File>
-              <FileName>MouthDetectionModel.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\Model\MouthDetectionModel.cpp</FilePath>
-            </File>
-            <File>
               <FileName>FaceDetectionModel.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\Model\FaceDetectionModel.cpp</FilePath>
             </File>
             <File>
+              <FileName>FaceLandmarkModel.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\Model\FaceLandmarkModel.cpp</FilePath>
+            </File>
+            <File>
               <FileName>face_detection_int8_vela_H256.tflite.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\Model\face_detection_int8_vela_H256.tflite.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>face_landmark_int8_vela_H256.tflite.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\Model\face_landmark_int8_vela_H256.tflite.cpp</FilePath>
             </File>
           </Files>
         </Group>
