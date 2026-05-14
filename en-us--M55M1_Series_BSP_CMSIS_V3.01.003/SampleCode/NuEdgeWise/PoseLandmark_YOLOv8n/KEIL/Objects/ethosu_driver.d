@@ -1,0 +1,19 @@
+./objects/ethosu_driver.o: \
+  ..\..\..\..\Library\StdDriver\src\npu\ethosu_driver.c \
+  ..\..\..\..\Library\StdDriver\inc\npu\ethosu_driver.h \
+  ..\..\..\..\Library\StdDriver\inc\npu\ethosu_types.h \
+  C:\Keil_v5\ARM\ARMCLANG\include\stdint.h \
+  C:\Keil_v5\ARM\ARMCLANG\include\stdbool.h \
+  C:\Keil_v5\ARM\ARMCLANG\include\stddef.h \
+  ..\..\..\..\Library\StdDriver\src\npu\ethosu_device.h \
+  ..\..\..\..\Library\StdDriver\src\npu\ethosu_log.h \
+  C:\Keil_v5\ARM\ARMCLANG\include\stdio.h \
+  C:\Keil_v5\ARM\ARMCLANG\include\string.h \
+  ..\..\..\..\Library\StdDriver\src\npu\ethosu_config_u55.h \
+  C:\Keil_v5\ARM\ARMCLANG\include\assert.h \
+  ..\..\..\..\Library\CMSIS\Core\Include\cmsis_compiler.h \
+  ..\..\..\..\Library\CMSIS\Core\Include\cmsis_armclang.h \
+  C:\Keil_v5\ARM\ARMCLANG\include\arm_acle.h \
+  C:\Final_Code_Capstone\Nuvoton_EchoTrack\en-us--M55M1_Series_BSP_CMSIS_V3.01.003\Library\CMSIS\Core\Include\m-profile\cmsis_armclang_m.h \
+  C:\Keil_v5\ARM\ARMCLANG\include\inttypes.h \
+  C:\Keil_v5\ARM\ARMCLANG\include\stdlib.h
