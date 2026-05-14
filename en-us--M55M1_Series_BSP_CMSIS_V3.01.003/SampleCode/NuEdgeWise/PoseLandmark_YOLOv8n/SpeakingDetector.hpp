@@ -18,19 +18,24 @@
 struct SpeakingFaceResult {
     int  x, y, w, h;      /* face bounding box in frame coordinates */
     bool isSpeaking;       /* temporally-smoothed speaking state */
-    bool rawMouthOpen;     /* raw landmark MAR motion signal this frame */
+    bool rawMouthOpen;     /* raw mouth-open/motion signal this frame */
     int  lipCount;         /* number of valid lip landmarks for drawing */
     int  lipX[SPEAKING_MAX_LIP_LANDMARKS];
     int  lipY[SPEAKING_MAX_LIP_LANDMARKS];
+    float mouthOpenNorm;   /* debug/tuning: dist(13,14) / dist(61,291) */
+    float motionEnergy;    /* debug/tuning: short-window abs velocity */
+    float onThreshold;     /* debug/tuning: active ON threshold */
+    float offThreshold;    /* debug/tuning: active OFF threshold */
+    float headMove;        /* debug/tuning: normalized bbox motion */
 };
 
 struct SpeakingDetectorConfig {
     float faceThreshold;       /* face detector confidence threshold (default 0.4) */
     float landmarkThreshold;   /* face landmark presence threshold (default 0.4) */
-    float marVelocityOn;       /* MAR velocity threshold to enter speaking */
-    float marVelocityOff;      /* MAR velocity threshold to release speaking */
-    float marOn;               /* MAR threshold to enter speaking */
-    float marOff;              /* MAR threshold to release speaking */
+    float marVelocityOn;       /* motion-energy threshold to enter speaking */
+    float marVelocityOff;      /* motion-energy threshold to release speaking */
+    float marOn;               /* mouth-open threshold to enter speaking */
+    float marOff;              /* mouth-open threshold to release speaking */
     int   confirmFrames;       /* consecutive above-threshold frames to switch on */
     int   releaseFrames;       /* consecutive below-threshold frames to switch off */
 };

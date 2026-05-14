@@ -2,7 +2,7 @@
  * @file     SpeakingDetector.cpp
  * @brief    Self-contained speaking-detection module.
  *           Runs embedded face detection + face landmark models, tracks faces
- *           across frames, and derives speaking state from lip MAR motion.
+ *           across frames, and derives speaking state from lip motion.
  *
  * @copyright SPDX-License-Identifier: Apache-2.0
  * @copyright Copyright (C) 2024 Nuvoton Technology Corp. All rights reserved.
@@ -24,6 +24,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <stdio.h>
 #include <vector>
 
 /* ------------------------------------------------------------------ */
@@ -35,23 +36,32 @@
 #define DEFAULT_FACE_THRESHOLD            (0.4f)
 #define DEFAULT_LANDMARK_THRESHOLD        (0.4f)
 
-#define SPEAKING_MAR_VELOCITY_THRESHOLD_ON   (0.022f)
-#define SPEAKING_MAR_VELOCITY_THRESHOLD_OFF  (0.008f)
-#define SPEAKING_MAR_THRESHOLD_ON            (0.26f)
-#define SPEAKING_MAR_THRESHOLD_OFF           (0.18f)
-#define SPEAKING_SMOOTHING_FRAMES            (3)
-#define SPEAKING_RELEASE_FRAMES              (5)
+#define SPEAKING_DEBUG_OVERLAY               (0)
+
+#define OPEN_MIN_THRESHOLD                   (0.11f)
+#define CLOSE_MIN_THRESHOLD                  (0.08f)
+#define MOTION_ENERGY_THRESHOLD_ON           (0.008f)
+#define MOTION_ENERGY_THRESHOLD_OFF          (0.004f)
+#define SPEAKING_SMOOTHING_FRAMES            (2)
+#define SPEAKING_RELEASE_FRAMES              (4)
 #define SPEAKING_MIN_DURATION_FRAMES         (5)
 #define SPEAKING_DETECT_EVERY_N_FRAMES       (1)
-#define MAR_SMOOTHING_ALPHA                  (0.3f)
-#define LANDMARK_SMOOTHING_ALPHA             (0.28f)
-#define BBOX_SMOOTHING_ALPHA                 (0.25f)
-#define HEAD_MOVE_THRESHOLD                  (0.08f)
+#define DISPLAY_LANDMARK_SMOOTHING_ALPHA     (0.65f)
+#define HEAD_MOVE_THRESHOLD                  (0.10f)
 #define HEAD_SIZE_CHANGE_THRESHOLD           (0.12f)
+#define MOTION_ENERGY_WINDOW                 (6)
+#define ADAPTIVE_K_ON                        (5.0f)
+#define ADAPTIVE_K_OFF                       (2.5f)
+#define ADAPTIVE_THRESHOLD_MAX               (0.020f)
+#define NOISE_EMA_ALPHA                      (0.08f)
 
 #define LIP_OFFSET_X                         (4)
 #define LIP_OFFSET_Y                         (3)
-#define MAR_CHIN_INDEX                       (152)
+
+#define MOUTH_UPPER_INDEX                    (13)
+#define MOUTH_LOWER_INDEX                    (14)
+#define MOUTH_LEFT_INDEX                     (61)
+#define MOUTH_RIGHT_INDEX                    (291)
 
 static const int s_lipLandmarkIndices[SPEAKING_MAX_LIP_LANDMARKS] = {
     61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 185,
@@ -72,11 +82,18 @@ namespace {
 struct PrevLipState {
     float lipX[SPEAKING_MAX_LIP_LANDMARKS];
     float lipY[SPEAKING_MAX_LIP_LANDMARKS];
-    float prevMAR;
-    float prevPrevMAR;
-    int prevPrevValid;
+    float prevMouthOpenNorm;
+    int prevMouthValid;
+    float mouthOpenWindow[MOTION_ENERGY_WINDOW];
+    float motionWindow[MOTION_ENERGY_WINDOW];
+    int windowIndex;
+    int windowCount;
+    float mouthOpenMean;
+    float motionEnergy;
+    float noiseMean;
+    float noiseDev;
+    int noiseValid;
     int x0, y0, w, h;
-    int smoothX0, smoothY0, smoothW, smoothH;
     int valid;
 };
 
@@ -103,23 +120,29 @@ static int s_speakingReleaseCount[MAX_TRACKED_FACES];
 static int s_speakingDurationCount[MAX_TRACKED_FACES];
 static bool s_speaking[MAX_TRACKED_FACES];
 
-static float s_smoothedRelX[SPEAKING_MAX_LIP_LANDMARKS];
-static float s_smoothedRelY[SPEAKING_MAX_LIP_LANDMARKS];
+static float s_displayRelX[SPEAKING_MAX_LIP_LANDMARKS];
+static float s_displayRelY[SPEAKING_MAX_LIP_LANDMARKS];
 static uint32_t s_speakingDetectFrameCount = 0;
 
 static float s_faceThreshold = DEFAULT_FACE_THRESHOLD;
 static float s_landmarkThreshold = DEFAULT_LANDMARK_THRESHOLD;
-static float s_marVelocityOn = SPEAKING_MAR_VELOCITY_THRESHOLD_ON;
-static float s_marVelocityOff = SPEAKING_MAR_VELOCITY_THRESHOLD_OFF;
-static float s_marOn = SPEAKING_MAR_THRESHOLD_ON;
-static float s_marOff = SPEAKING_MAR_THRESHOLD_OFF;
+static float s_motionEnergyOn = MOTION_ENERGY_THRESHOLD_ON;
+static float s_motionEnergyOff = MOTION_ENERGY_THRESHOLD_OFF;
+static float s_mouthOpenOn = OPEN_MIN_THRESHOLD;
+static float s_mouthOpenOff = CLOSE_MIN_THRESHOLD;
 static int s_confirmFrames = SPEAKING_SMOOTHING_FRAMES;
 static int s_releaseFrames = SPEAKING_RELEASE_FRAMES;
+
+static void ResetTrackState(int trackId)
+{
+    if (trackId < 0 || trackId >= MAX_TRACKED_FACES) return;
+    s_prevLip[trackId] = PrevLipState{};
+}
 
 static void InitTrackingState()
 {
     for (int i = 0; i < MAX_TRACKED_FACES; i++) {
-        s_prevLip[i] = PrevLipState{};
+        ResetTrackState(i);
         s_speakingConfirmCount[i] = 0;
         s_speakingReleaseCount[i] = 0;
         s_speakingDurationCount[i] = 0;
@@ -128,7 +151,111 @@ static void InitTrackingState()
     s_speakingDetectFrameCount = 0;
 }
 
-static void ApplyLipSmoothing(
+static float Distance2D(
+    const std::vector<arm::app::face_landmark::KeypointResult> &keypoints,
+    int idxA,
+    int idxB)
+{
+    if (idxA >= (int)keypoints.size() || idxB >= (int)keypoints.size()) return 0.0f;
+
+    float dx = (float)(keypoints[idxA].m_x - keypoints[idxB].m_x);
+    float dy = (float)(keypoints[idxA].m_y - keypoints[idxB].m_y);
+    return std::sqrt(dx * dx + dy * dy);
+}
+
+static float ComputeMouthOpenNorm(
+    const std::vector<arm::app::face_landmark::KeypointResult> &keypoints)
+{
+    if (keypoints.size() < 468) return 0.0f;
+
+    float mouthOpen = Distance2D(keypoints, MOUTH_UPPER_INDEX, MOUTH_LOWER_INDEX);
+    float mouthWidth = Distance2D(keypoints, MOUTH_LEFT_INDEX, MOUTH_RIGHT_INDEX);
+    if (mouthWidth < 1.0f) return 0.0f;
+    return mouthOpen / mouthWidth;
+}
+
+static float MeanWindow(const float *values, int count)
+{
+    if (count <= 0) return 0.0f;
+
+    float sum = 0.0f;
+    for (int i = 0; i < count; i++) {
+        sum += values[i];
+    }
+    return sum / (float)count;
+}
+
+static void UpdateMotionWindow(
+    int trackId,
+    float mouthOpenNorm,
+    float *outMouthOpenMean,
+    float *outMotionEnergy)
+{
+    PrevLipState *state = &s_prevLip[trackId];
+    float velocity = 0.0f;
+
+    if (state->prevMouthValid) {
+        velocity = std::fabs(mouthOpenNorm - state->prevMouthOpenNorm);
+    }
+
+    state->mouthOpenWindow[state->windowIndex] = mouthOpenNorm;
+    state->motionWindow[state->windowIndex] = velocity;
+    state->windowIndex = (state->windowIndex + 1) % MOTION_ENERGY_WINDOW;
+    if (state->windowCount < MOTION_ENERGY_WINDOW) {
+        state->windowCount++;
+    }
+
+    state->prevMouthOpenNorm = mouthOpenNorm;
+    state->prevMouthValid = 1;
+
+    state->mouthOpenMean = MeanWindow(state->mouthOpenWindow, state->windowCount);
+    state->motionEnergy = MeanWindow(state->motionWindow, state->windowCount);
+
+    *outMouthOpenMean = state->mouthOpenMean;
+    *outMotionEnergy = state->motionEnergy;
+}
+
+static void UpdateNoiseBaseline(int trackId, float motionEnergy)
+{
+    PrevLipState *state = &s_prevLip[trackId];
+
+    if (!state->noiseValid) {
+        state->noiseMean = motionEnergy;
+        state->noiseDev = 0.0f;
+        state->noiseValid = 1;
+        return;
+    }
+
+    float diff = std::fabs(motionEnergy - state->noiseMean);
+    state->noiseMean = (NOISE_EMA_ALPHA * motionEnergy) +
+        ((1.0f - NOISE_EMA_ALPHA) * state->noiseMean);
+    state->noiseDev = (NOISE_EMA_ALPHA * diff) +
+        ((1.0f - NOISE_EMA_ALPHA) * state->noiseDev);
+}
+
+static float ClampThreshold(float value, float minValue)
+{
+    if (value < minValue) return minValue;
+    if (value > ADAPTIVE_THRESHOLD_MAX) return ADAPTIVE_THRESHOLD_MAX;
+    return value;
+}
+
+static void GetAdaptiveThresholds(int trackId, float *outOn, float *outOff)
+{
+    PrevLipState *state = &s_prevLip[trackId];
+
+    float adaptiveOn = s_motionEnergyOn;
+    float adaptiveOff = s_motionEnergyOff;
+    if (state->noiseValid) {
+        adaptiveOn = state->noiseMean + (ADAPTIVE_K_ON * state->noiseDev);
+        adaptiveOff = state->noiseMean + (ADAPTIVE_K_OFF * state->noiseDev);
+    }
+
+    *outOn = ClampThreshold(adaptiveOn, s_motionEnergyOn);
+    *outOff = ClampThreshold(adaptiveOff, s_motionEnergyOff);
+}
+
+static void ApplyDisplayLipSmoothing(
     const std::vector<arm::app::face_landmark::KeypointResult> &keypoints,
     int trackId, int faceW, int faceH,
     float *outRelX, float *outRelY)
@@ -144,69 +271,15 @@ static void ApplyLipSmoothing(
         }
 
         if (trackId >= 0 && trackId < MAX_TRACKED_FACES && s_prevLip[trackId].valid) {
-            outRelX[i] = LANDMARK_SMOOTHING_ALPHA * rawRelX +
-                (1.0f - LANDMARK_SMOOTHING_ALPHA) * s_prevLip[trackId].lipX[i];
-            outRelY[i] = LANDMARK_SMOOTHING_ALPHA * rawRelY +
-                (1.0f - LANDMARK_SMOOTHING_ALPHA) * s_prevLip[trackId].lipY[i];
+            outRelX[i] = DISPLAY_LANDMARK_SMOOTHING_ALPHA * rawRelX +
+                (1.0f - DISPLAY_LANDMARK_SMOOTHING_ALPHA) * s_prevLip[trackId].lipX[i];
+            outRelY[i] = DISPLAY_LANDMARK_SMOOTHING_ALPHA * rawRelY +
+                (1.0f - DISPLAY_LANDMARK_SMOOTHING_ALPHA) * s_prevLip[trackId].lipY[i];
         } else {
             outRelX[i] = rawRelX;
             outRelY[i] = rawRelY;
         }
     }
-}
-
-static float ComputeMAR(
-    const std::vector<arm::app::face_landmark::KeypointResult> &keypoints,
-    const float *smoothedRelX, const float *smoothedRelY,
-    int faceW, int faceH)
-{
-    if (keypoints.size() < 468) return 0.0f;
-
-    float minX = 1e9f;
-    float maxX = -1e9f;
-    float minY = 1e9f;
-    float maxY = -1e9f;
-
-    for (int i = 0; i < SPEAKING_MAX_LIP_LANDMARKS; i++) {
-        if (smoothedRelX[i] < minX) minX = smoothedRelX[i];
-        if (smoothedRelX[i] > maxX) maxX = smoothedRelX[i];
-        if (smoothedRelY[i] < minY) minY = smoothedRelY[i];
-        if (smoothedRelY[i] > maxY) maxY = smoothedRelY[i];
-    }
-
-    if (MAR_CHIN_INDEX < (int)keypoints.size() && faceW > 0 && faceH > 0) {
-        float cx = (float)keypoints[MAR_CHIN_INDEX].m_x / (float)faceW;
-        float cy = (float)keypoints[MAR_CHIN_INDEX].m_y / (float)faceH;
-        if (cx < minX) minX = cx;
-        if (cx > maxX) maxX = cx;
-        if (cy < minY) minY = cy;
-        if (cy > maxY) maxY = cy;
-    }
-
-    float horiz = maxX - minX;
-    float vert = maxY - minY;
-    if (horiz < 0.02f) return 0.0f;
-    return vert / horiz;
-}
-
-static float ComputeMARVelocityAndSmooth(float rawMAR, int trackId, float *outSmoothedMAR)
-{
-    float smoothed = rawMAR;
-    float velocity = 0.0f;
-
-    if (trackId >= 0 && trackId < MAX_TRACKED_FACES && s_prevLip[trackId].valid) {
-        float prev = s_prevLip[trackId].prevMAR;
-        smoothed = MAR_SMOOTHING_ALPHA * rawMAR + (1.0f - MAR_SMOOTHING_ALPHA) * prev;
-        if (s_prevLip[trackId].prevPrevValid) {
-            float old = s_prevLip[trackId].prevPrevMAR;
-            velocity = std::fabs(smoothed - old);
-        } else {
-            velocity = std::fabs(smoothed - prev);
-        }
-    }
-
-    *outSmoothedMAR = smoothed;
-    return velocity;
 }
 
 static int FindMatchingPrevFace(int curX0, int curY0, int curW, int curH)
@@ -275,58 +348,37 @@ static int HeadUnstable(int trackId, int curX0, int curY0, int curW, int curH)
 }
 
 static void StoreLipState(
-    const float *smoothedRelX, const float *smoothedRelY, float smoothedMAR,
+    const float *displayRelX, const float *displayRelY,
     int trackId, int faceX0, int faceY0, int faceW, int faceH)
 {
     if (trackId < 0 || trackId >= MAX_TRACKED_FACES) return;
 
     PrevLipState *state = &s_prevLip[trackId];
     for (int i = 0; i < SPEAKING_MAX_LIP_LANDMARKS; i++) {
-        state->lipX[i] = smoothedRelX[i];
-        state->lipY[i] = smoothedRelY[i];
+        state->lipX[i] = displayRelX[i];
+        state->lipY[i] = displayRelY[i];
     }
 
-    state->prevPrevMAR = state->prevMAR;
-    state->prevPrevValid = state->valid;
-    state->prevMAR = smoothedMAR;
     state->x0 = faceX0;
     state->y0 = faceY0;
     state->w = faceW;
     state->h = faceH;
-
-    if (state->valid) {
-        float a = BBOX_SMOOTHING_ALPHA;
-        state->smoothX0 = (int)(a * faceX0 + (1.0f - a) * state->smoothX0);
-        state->smoothY0 = (int)(a * faceY0 + (1.0f - a) * state->smoothY0);
-        state->smoothW = (int)(a * faceW + (1.0f - a) * state->smoothW);
-        state->smoothH = (int)(a * faceH + (1.0f - a) * state->smoothH);
-    } else {
-        state->smoothX0 = faceX0;
-        state->smoothY0 = faceY0;
-        state->smoothW = faceW;
-        state->smoothH = faceH;
-    }
     state->valid = 1;
 }
 
-static void FillLipDrawPoints(SpeakingFaceResult *result, int trackId, int faceX0, int faceY0, int faceW, int faceH)
+static void FillLipDrawPoints(
+    SpeakingFaceResult *result,
+    const float *displayRelX,
+    const float *displayRelY,
+    int faceX0,
+    int faceY0,
+    int faceW,
+    int faceH)
 {
-    int drawX0 = faceX0;
-    int drawY0 = faceY0;
-    int drawW = faceW;
-    int drawH = faceH;
-
-    if (trackId >= 0 && trackId < MAX_TRACKED_FACES && s_prevLip[trackId].valid) {
-        drawX0 = s_prevLip[trackId].smoothX0;
-        drawY0 = s_prevLip[trackId].smoothY0;
-        drawW = s_prevLip[trackId].smoothW;
-        drawH = s_prevLip[trackId].smoothH;
-    }
-
     result->lipCount = SPEAKING_MAX_LIP_LANDMARKS;
     for (int i = 0; i < SPEAKING_MAX_LIP_LANDMARKS; i++) {
-        result->lipX[i] = drawX0 + (int)(s_smoothedRelX[i] * drawW) + LIP_OFFSET_X;
-        result->lipY[i] = drawY0 + (int)(s_smoothedRelY[i] * drawH) + LIP_OFFSET_Y;
+        result->lipX[i] = faceX0 + (int)(displayRelX[i] * faceW) + LIP_OFFSET_X;
+        result->lipY[i] = faceY0 + (int)(displayRelY[i] * faceH) + LIP_OFFSET_Y;
     }
 }
 
@@ -364,6 +416,11 @@ static void PopulateDefaults(SpeakingFaceResult *result, const arm::app::face_de
     result->isSpeaking = false;
     result->rawMouthOpen = false;
     result->lipCount = 0;
+    result->mouthOpenNorm = 0.0f;
+    result->motionEnergy = 0.0f;
+    result->onThreshold = 0.0f;
+    result->offThreshold = 0.0f;
+    result->headMove = 0.0f;
 }
 
 } /* anonymous namespace */
@@ -376,20 +433,20 @@ int SpeakingDetector_Init(const SpeakingDetectorConfig *cfg)
 {
     s_faceThreshold = DEFAULT_FACE_THRESHOLD;
     s_landmarkThreshold = DEFAULT_LANDMARK_THRESHOLD;
-    s_marVelocityOn = SPEAKING_MAR_VELOCITY_THRESHOLD_ON;
-    s_marVelocityOff = SPEAKING_MAR_VELOCITY_THRESHOLD_OFF;
-    s_marOn = SPEAKING_MAR_THRESHOLD_ON;
-    s_marOff = SPEAKING_MAR_THRESHOLD_OFF;
+    s_motionEnergyOn = MOTION_ENERGY_THRESHOLD_ON;
+    s_motionEnergyOff = MOTION_ENERGY_THRESHOLD_OFF;
+    s_mouthOpenOn = OPEN_MIN_THRESHOLD;
+    s_mouthOpenOff = CLOSE_MIN_THRESHOLD;
     s_confirmFrames = SPEAKING_SMOOTHING_FRAMES;
     s_releaseFrames = SPEAKING_RELEASE_FRAMES;
 
     if (cfg) {
         s_faceThreshold = cfg->faceThreshold;
         s_landmarkThreshold = cfg->landmarkThreshold;
-        s_marVelocityOn = cfg->marVelocityOn;
-        s_marVelocityOff = cfg->marVelocityOff;
-        s_marOn = cfg->marOn;
-        s_marOff = cfg->marOff;
+        s_motionEnergyOn = cfg->marVelocityOn;
+        s_motionEnergyOff = cfg->marVelocityOff;
+        s_mouthOpenOn = cfg->marOn;
+        s_mouthOpenOff = cfg->marOff;
         s_confirmFrames = cfg->confirmFrames;
         s_releaseFrames = cfg->releaseFrames;
     }
@@ -516,6 +573,7 @@ int SpeakingDetector_RunFrame(
 
         int trackId = (matchedPrev >= 0) ? matchedPrev : AllocateTrack(i);
         if (matchedPrev < 0 && trackId < MAX_TRACKED_FACES) {
+            ResetTrackState(trackId);
             s_speaking[trackId] = false;
             s_speakingConfirmCount[trackId] = 0;
             s_speakingReleaseCount[trackId] = 0;
@@ -573,20 +631,38 @@ int SpeakingDetector_RunFrame(
             s_keypoints);
 
         if (trackId < MAX_TRACKED_FACES && s_keypoints.size() >= 468) {
-            ApplyLipSmoothing(s_keypoints, trackId, roi.w, roi.h, s_smoothedRelX, s_smoothedRelY);
+            ApplyDisplayLipSmoothing(s_keypoints, trackId, roi.w, roi.h, s_displayRelX, s_displayRelY);
 
             if (runDetectionThisFrame) {
-                float rawMAR = ComputeMAR(s_keypoints, s_smoothedRelX, s_smoothedRelY, roi.w, roi.h);
-                float smoothedMAR = 0.0f;
-                float marVelocity = ComputeMARVelocityAndSmooth(rawMAR, trackId, &smoothedMAR) /
-                    (float)SPEAKING_DETECT_EVERY_N_FRAMES;
+                float mouthOpenNorm = ComputeMouthOpenNorm(s_keypoints);
+                float mouthOpenMean = 0.0f;
+                float motionEnergy = 0.0f;
+                float thresholdOn = 0.0f;
+                float thresholdOff = 0.0f;
+                float headMove = HeadMoveAmount(trackId, faceBox.m_x0, faceBox.m_y0, faceBox.m_w, faceBox.m_h);
                 int headUnstable = HeadUnstable(trackId, faceBox.m_x0, faceBox.m_y0, faceBox.m_w, faceBox.m_h);
+
+                UpdateMotionWindow(trackId, mouthOpenNorm, &mouthOpenMean, &motionEnergy);
+                if (!s_speaking[trackId] &&
+                    mouthOpenMean < s_mouthOpenOff &&
+                    mouthOpenNorm < s_mouthOpenOff) {
+                    UpdateNoiseBaseline(trackId, motionEnergy);
+                }
+                GetAdaptiveThresholds(trackId, &thresholdOn, &thresholdOff);
+
                 int signalAboveOn = !headUnstable &&
-                    (marVelocity > s_marVelocityOn) && (smoothedMAR > s_marOn);
+                    (motionEnergy > thresholdOn) &&
+                    ((mouthOpenNorm > s_mouthOpenOn) || (mouthOpenMean > s_mouthOpenOn));
                 int signalBelowOff =
-                    (marVelocity < s_marVelocityOff) || (smoothedMAR < s_marOff);
+                    (motionEnergy < thresholdOff) ||
+                    ((mouthOpenNorm < s_mouthOpenOff) && (mouthOpenMean < s_mouthOpenOff));
 
                 results[i].rawMouthOpen = signalAboveOn ? true : false;
+                results[i].mouthOpenNorm = mouthOpenMean;
+                results[i].motionEnergy = motionEnergy;
+                results[i].onThreshold = thresholdOn;
+                results[i].offThreshold = thresholdOff;
+                results[i].headMove = headMove;
 
                 if (signalAboveOn) {
                     s_speakingConfirmCount[trackId] =
@@ -619,12 +695,19 @@ int SpeakingDetector_RunFrame(
                 }
 
                 StoreLipState(
-                    s_smoothedRelX, s_smoothedRelY, smoothedMAR,
+                    s_displayRelX, s_displayRelY,
                     trackId, faceBox.m_x0, faceBox.m_y0, faceBox.m_w, faceBox.m_h);
             }
 
             results[i].isSpeaking = s_speaking[trackId];
-            FillLipDrawPoints(&results[i], trackId, faceBox.m_x0, faceBox.m_y0, faceBox.m_w, faceBox.m_h);
+            FillLipDrawPoints(
+                &results[i],
+                s_displayRelX,
+                s_displayRelY,
+                faceBox.m_x0,
+                faceBox.m_y0,
+                faceBox.m_w,
+                faceBox.m_h);
         } else if (trackId < MAX_TRACKED_FACES) {
             s_prevLip[trackId].valid = 0;
             results[i].isSpeaking = s_speaking[trackId];
@@ -665,6 +748,21 @@ void SpeakingDetector_Draw(
             imlib_draw_circle(&drawImg, results[i].lipX[k], results[i].lipY[k],
                               2, green, 1, true);
         }
+
+#if (SPEAKING_DEBUG_OVERLAY)
+        {
+            char dbg[80];
+            snprintf(dbg, sizeof(dbg), "op %.2f me %.3f on %.3f off %.3f hm %.2f",
+                     results[i].mouthOpenNorm,
+                     results[i].motionEnergy,
+                     results[i].onThreshold,
+                     results[i].offThreshold,
+                     results[i].headMove);
+            imlib_draw_string(&drawImg, results[i].x, results[i].y + results[i].h + 2,
+                              dbg, boxColor, 1, 0, 0, false, false, false, false,
+                              0, false, false);
+        }
+#endif
     }
 }
 
