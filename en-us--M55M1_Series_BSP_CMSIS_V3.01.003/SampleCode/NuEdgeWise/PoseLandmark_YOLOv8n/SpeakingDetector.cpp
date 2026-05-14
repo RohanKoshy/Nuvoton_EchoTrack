@@ -38,30 +38,44 @@
 
 #define SPEAKING_DEBUG_OVERLAY               (0)
 
-#define OPEN_MIN_THRESHOLD                   (0.11f)
-#define CLOSE_MIN_THRESHOLD                  (0.08f)
-#define MOTION_ENERGY_THRESHOLD_ON           (0.008f)
-#define MOTION_ENERGY_THRESHOLD_OFF          (0.004f)
+/* Absolute floors (safety net under the per-face adaptive baselines below). */
+#define OPEN_MIN_THRESHOLD                   (0.04f)
+#define CLOSE_MIN_THRESHOLD                  (0.025f)
+#define MOTION_ENERGY_THRESHOLD_ON           (0.002f)
+#define MOTION_ENERGY_THRESHOLD_OFF          (0.001f)
+#define MOTION_MIN_FLOOR                     (0.0008f)
+
 #define SPEAKING_SMOOTHING_FRAMES            (2)
 #define SPEAKING_RELEASE_FRAMES              (4)
 #define SPEAKING_MIN_DURATION_FRAMES         (5)
 #define SPEAKING_DETECT_EVERY_N_FRAMES       (1)
-#define DISPLAY_LANDMARK_SMOOTHING_ALPHA     (0.65f)
+
+/* Display path: light lip smoothing + small bbox EMA to absorb detector jitter. */
+#define DISPLAY_LANDMARK_SMOOTHING_ALPHA     (0.85f)
+#define BBOX_DISPLAY_SMOOTHING_ALPHA         (0.55f)
+
 #define HEAD_MOVE_THRESHOLD                  (0.10f)
 #define HEAD_SIZE_CHANGE_THRESHOLD           (0.12f)
 #define MOTION_ENERGY_WINDOW                 (6)
+
+/* Adaptive baseline tunables. */
 #define ADAPTIVE_K_ON                        (5.0f)
 #define ADAPTIVE_K_OFF                       (2.5f)
 #define ADAPTIVE_THRESHOLD_MAX               (0.020f)
 #define NOISE_EMA_ALPHA                      (0.08f)
+#define K_MOTION                             (3.0f)
+#define K_OPEN                               (2.5f)
+#define MOTION_FLOOR_EPS                     (0.0008f)
+#define OPEN_FLOOR_EPS                       (0.010f)
+#define OPEN_CLEARLY_OPEN_K                  (2.0f)
 
-#define LIP_OFFSET_X                         (4)
-#define LIP_OFFSET_Y                         (3)
+/* Mouth landmark indices.  Width pair stays fixed; open uses three vertical pairs. */
+#define MOUTH_WIDTH_LEFT_INDEX               (61)
+#define MOUTH_WIDTH_RIGHT_INDEX              (291)
+#define MOUTH_OPEN_PAIRS                     (3)
 
-#define MOUTH_UPPER_INDEX                    (13)
-#define MOUTH_LOWER_INDEX                    (14)
-#define MOUTH_LEFT_INDEX                     (61)
-#define MOUTH_RIGHT_INDEX                    (291)
+static const int s_mouthOpenUpperIdx[MOUTH_OPEN_PAIRS] = {  13,  81, 311 };
+static const int s_mouthOpenLowerIdx[MOUTH_OPEN_PAIRS] = {  14, 178, 402 };
 
 static const int s_lipLandmarkIndices[SPEAKING_MAX_LIP_LANDMARKS] = {
     61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 185,
@@ -93,7 +107,15 @@ struct PrevLipState {
     float noiseMean;
     float noiseDev;
     int noiseValid;
+    float openBaseline;
+    float openBaselineDev;
+    int openBaselineValid;
     int x0, y0, w, h;
+    float smoothBoxX0;
+    float smoothBoxY0;
+    float smoothBoxW;
+    float smoothBoxH;
+    int smoothBoxValid;
     int valid;
 };
 
@@ -168,10 +190,15 @@ static float ComputeMouthOpenNorm(
 {
     if (keypoints.size() < 468) return 0.0f;
 
-    float mouthOpen = Distance2D(keypoints, MOUTH_UPPER_INDEX, MOUTH_LOWER_INDEX);
-    float mouthWidth = Distance2D(keypoints, MOUTH_LEFT_INDEX, MOUTH_RIGHT_INDEX);
+    float openSum = 0.0f;
+    for (int i = 0; i < MOUTH_OPEN_PAIRS; i++) {
+        openSum += Distance2D(keypoints, s_mouthOpenUpperIdx[i], s_mouthOpenLowerIdx[i]);
+    }
+    float meanOpen = openSum / (float)MOUTH_OPEN_PAIRS;
+
+    float mouthWidth = Distance2D(keypoints, MOUTH_WIDTH_LEFT_INDEX, MOUTH_WIDTH_RIGHT_INDEX);
     if (mouthWidth < 1.0f) return 0.0f;
-    return mouthOpen / mouthWidth;
+    return meanOpen / mouthWidth;
 }
 
 static float MeanWindow(const float *values, int count)
@@ -231,6 +258,38 @@ static void UpdateNoiseBaseline(int trackId, float motionEnergy)
         ((1.0f - NOISE_EMA_ALPHA) * state->noiseMean);
     state->noiseDev = (NOISE_EMA_ALPHA * diff) +
         ((1.0f - NOISE_EMA_ALPHA) * state->noiseDev);
+}
+
+static void UpdateOpenBaseline(int trackId, float mouthOpenMean)
+{
+    PrevLipState *state = &s_prevLip[trackId];
+
+    if (!state->openBaselineValid) {
+        state->openBaseline = mouthOpenMean;
+        state->openBaselineDev = 0.0f;
+        state->openBaselineValid = 1;
+        return;
+    }
+
+    float diff = std::fabs(mouthOpenMean - state->openBaseline);
+    state->openBaseline = (NOISE_EMA_ALPHA * mouthOpenMean) +
+        ((1.0f - NOISE_EMA_ALPHA) * state->openBaseline);
+    state->openBaselineDev = (NOISE_EMA_ALPHA * diff) +
+        ((1.0f - NOISE_EMA_ALPHA) * state->openBaselineDev);
+}
+
+static bool LooksRestLike(int trackId, float mouthOpenMean, int headUnstable)
+{
+    PrevLipState *state = &s_prevLip[trackId];
+
+    if (headUnstable) return false;
+    if (mouthOpenMean >= s_mouthOpenOn) return false;
+    if (state->openBaselineValid) {
+        float ceiling = state->openBaseline +
+            (OPEN_CLEARLY_OPEN_K * (state->openBaselineDev + OPEN_FLOOR_EPS));
+        if (mouthOpenMean >= ceiling) return false;
+    }
+    return true;
 }
 
 static float ClampThreshold(float value, float minValue)
@@ -363,22 +422,53 @@ static void StoreLipState(
     state->y0 = faceY0;
     state->w = faceW;
     state->h = faceH;
+
+    if (state->smoothBoxValid) {
+        const float a = BBOX_DISPLAY_SMOOTHING_ALPHA;
+        state->smoothBoxX0 = (a * (float)faceX0) + ((1.0f - a) * state->smoothBoxX0);
+        state->smoothBoxY0 = (a * (float)faceY0) + ((1.0f - a) * state->smoothBoxY0);
+        state->smoothBoxW  = (a * (float)faceW)  + ((1.0f - a) * state->smoothBoxW);
+        state->smoothBoxH  = (a * (float)faceH)  + ((1.0f - a) * state->smoothBoxH);
+    } else {
+        state->smoothBoxX0 = (float)faceX0;
+        state->smoothBoxY0 = (float)faceY0;
+        state->smoothBoxW  = (float)faceW;
+        state->smoothBoxH  = (float)faceH;
+        state->smoothBoxValid = 1;
+    }
     state->valid = 1;
+}
+
+static void GetDisplayBox(int trackId,
+    int rawX0, int rawY0, int rawW, int rawH,
+    int *outX0, int *outY0, int *outW, int *outH)
+{
+    if (trackId >= 0 && trackId < MAX_TRACKED_FACES && s_prevLip[trackId].smoothBoxValid) {
+        *outX0 = (int)s_prevLip[trackId].smoothBoxX0;
+        *outY0 = (int)s_prevLip[trackId].smoothBoxY0;
+        *outW  = (int)s_prevLip[trackId].smoothBoxW;
+        *outH  = (int)s_prevLip[trackId].smoothBoxH;
+    } else {
+        *outX0 = rawX0;
+        *outY0 = rawY0;
+        *outW  = rawW;
+        *outH  = rawH;
+    }
 }
 
 static void FillLipDrawPoints(
     SpeakingFaceResult *result,
     const float *displayRelX,
     const float *displayRelY,
-    int faceX0,
-    int faceY0,
-    int faceW,
-    int faceH)
+    int boxX0,
+    int boxY0,
+    int boxW,
+    int boxH)
 {
     result->lipCount = SPEAKING_MAX_LIP_LANDMARKS;
     for (int i = 0; i < SPEAKING_MAX_LIP_LANDMARKS; i++) {
-        result->lipX[i] = faceX0 + (int)(displayRelX[i] * faceW) + LIP_OFFSET_X;
-        result->lipY[i] = faceY0 + (int)(displayRelY[i] * faceH) + LIP_OFFSET_Y;
+        result->lipX[i] = boxX0 + (int)(displayRelX[i] * (float)boxW);
+        result->lipY[i] = boxY0 + (int)(displayRelY[i] * (float)boxH);
     }
 }
 
@@ -421,6 +511,8 @@ static void PopulateDefaults(SpeakingFaceResult *result, const arm::app::face_de
     result->onThreshold = 0.0f;
     result->offThreshold = 0.0f;
     result->headMove = 0.0f;
+    result->openBaseline = 0.0f;
+    result->openBaselineDev = 0.0f;
 }
 
 } /* anonymous namespace */
@@ -643,19 +735,35 @@ int SpeakingDetector_RunFrame(
                 int headUnstable = HeadUnstable(trackId, faceBox.m_x0, faceBox.m_y0, faceBox.m_w, faceBox.m_h);
 
                 UpdateMotionWindow(trackId, mouthOpenNorm, &mouthOpenMean, &motionEnergy);
-                if (!s_speaking[trackId] &&
-                    mouthOpenMean < s_mouthOpenOff &&
-                    mouthOpenNorm < s_mouthOpenOff) {
+
+                /*
+                 * Update both adaptive baselines only when this face looks rest-like
+                 * (not speaking, head stable, mouth quiet relative to its own baseline)
+                 * so the baselines do not drift up into actual speech.
+                 */
+                if (!s_speaking[trackId] && LooksRestLike(trackId, mouthOpenMean, headUnstable)) {
                     UpdateNoiseBaseline(trackId, motionEnergy);
+                    UpdateOpenBaseline(trackId, mouthOpenMean);
                 }
                 GetAdaptiveThresholds(trackId, &thresholdOn, &thresholdOff);
 
-                int signalAboveOn = !headUnstable &&
-                    (motionEnergy > thresholdOn) &&
-                    ((mouthOpenNorm > s_mouthOpenOn) || (mouthOpenMean > s_mouthOpenOn));
-                int signalBelowOff =
-                    (motionEnergy < thresholdOff) ||
-                    ((mouthOpenNorm < s_mouthOpenOff) && (mouthOpenMean < s_mouthOpenOff));
+                const PrevLipState *st = &s_prevLip[trackId];
+                float motionExcess = motionEnergy - st->noiseMean;
+                float openExcess = mouthOpenMean - st->openBaseline;
+
+                int motionElevated = st->noiseValid &&
+                    (motionExcess > K_MOTION * (st->noiseDev + MOTION_FLOOR_EPS)) &&
+                    (motionEnergy > s_motionEnergyOn);
+                int openElevated = st->openBaselineValid &&
+                    (openExcess > K_OPEN * (st->openBaselineDev + OPEN_FLOOR_EPS)) &&
+                    (mouthOpenMean > s_mouthOpenOn);
+                int openClearlyOpen = st->openBaselineValid &&
+                    (mouthOpenMean > (st->openBaseline +
+                        OPEN_CLEARLY_OPEN_K * (st->openBaselineDev + OPEN_FLOOR_EPS))) &&
+                    (motionEnergy > MOTION_MIN_FLOOR);
+
+                int signalAboveOn = !headUnstable && (motionElevated || openClearlyOpen);
+                int signalBelowOff = (!motionElevated) && (!openElevated);
 
                 results[i].rawMouthOpen = signalAboveOn ? true : false;
                 results[i].mouthOpenNorm = mouthOpenMean;
@@ -663,6 +771,8 @@ int SpeakingDetector_RunFrame(
                 results[i].onThreshold = thresholdOn;
                 results[i].offThreshold = thresholdOff;
                 results[i].headMove = headMove;
+                results[i].openBaseline = st->openBaseline;
+                results[i].openBaselineDev = st->openBaselineDev;
 
                 if (signalAboveOn) {
                     s_speakingConfirmCount[trackId] =
@@ -700,14 +810,27 @@ int SpeakingDetector_RunFrame(
             }
 
             results[i].isSpeaking = s_speaking[trackId];
+
+            int dispX0 = faceBox.m_x0;
+            int dispY0 = faceBox.m_y0;
+            int dispW  = faceBox.m_w;
+            int dispH  = faceBox.m_h;
+            GetDisplayBox(trackId,
+                faceBox.m_x0, faceBox.m_y0, faceBox.m_w, faceBox.m_h,
+                &dispX0, &dispY0, &dispW, &dispH);
+            results[i].x = dispX0;
+            results[i].y = dispY0;
+            results[i].w = dispW;
+            results[i].h = dispH;
+
             FillLipDrawPoints(
                 &results[i],
                 s_displayRelX,
                 s_displayRelY,
-                faceBox.m_x0,
-                faceBox.m_y0,
-                faceBox.m_w,
-                faceBox.m_h);
+                dispX0,
+                dispY0,
+                dispW,
+                dispH);
         } else if (trackId < MAX_TRACKED_FACES) {
             s_prevLip[trackId].valid = 0;
             results[i].isSpeaking = s_speaking[trackId];
@@ -751,13 +874,16 @@ void SpeakingDetector_Draw(
 
 #if (SPEAKING_DEBUG_OVERLAY)
         {
-            char dbg[80];
-            snprintf(dbg, sizeof(dbg), "op %.2f me %.3f on %.3f off %.3f hm %.2f",
+            char dbg[112];
+            snprintf(dbg, sizeof(dbg),
+                     "op %.2f me %.3f on %.3f off %.3f hm %.2f bo %.2f bd %.3f",
                      results[i].mouthOpenNorm,
                      results[i].motionEnergy,
                      results[i].onThreshold,
                      results[i].offThreshold,
-                     results[i].headMove);
+                     results[i].headMove,
+                     results[i].openBaseline,
+                     results[i].openBaselineDev);
             imlib_draw_string(&drawImg, results[i].x, results[i].y + results[i].h + 2,
                               dbg, boxColor, 1, 0, 0, false, false, false, false,
                               0, false, false);

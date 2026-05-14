@@ -16,17 +16,19 @@
 #define SPEAKING_MAX_LIP_LANDMARKS 24
 
 struct SpeakingFaceResult {
-    int  x, y, w, h;      /* face bounding box in frame coordinates */
+    int  x, y, w, h;      /* face bounding box in frame coordinates (display-smoothed) */
     bool isSpeaking;       /* temporally-smoothed speaking state */
     bool rawMouthOpen;     /* raw mouth-open/motion signal this frame */
     int  lipCount;         /* number of valid lip landmarks for drawing */
     int  lipX[SPEAKING_MAX_LIP_LANDMARKS];
     int  lipY[SPEAKING_MAX_LIP_LANDMARKS];
-    float mouthOpenNorm;   /* debug/tuning: dist(13,14) / dist(61,291) */
-    float motionEnergy;    /* debug/tuning: short-window abs velocity */
-    float onThreshold;     /* debug/tuning: active ON threshold */
-    float offThreshold;    /* debug/tuning: active OFF threshold */
-    float headMove;        /* debug/tuning: normalized bbox motion */
+    float mouthOpenNorm;     /* debug/tuning: short-window mean of multi-pair open */
+    float motionEnergy;      /* debug/tuning: short-window abs velocity */
+    float onThreshold;       /* debug/tuning: active motion ON threshold */
+    float offThreshold;      /* debug/tuning: active motion OFF threshold */
+    float headMove;          /* debug/tuning: normalized bbox motion */
+    float openBaseline;      /* debug/tuning: adaptive closed-mouth baseline */
+    float openBaselineDev;   /* debug/tuning: adaptive baseline mean abs deviation */
 };
 
 struct SpeakingDetectorConfig {
