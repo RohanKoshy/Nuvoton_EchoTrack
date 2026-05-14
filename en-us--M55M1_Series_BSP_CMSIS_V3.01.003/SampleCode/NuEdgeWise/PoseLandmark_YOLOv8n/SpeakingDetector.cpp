@@ -93,30 +93,37 @@ static uint8_t s_arenaLandmark[FACE_LANDMARK_ACTIVATION_BUF_SZ];
 
 namespace {
 
+/*
+ * Field layout is intentionally compact: bool flags share one 32-bit bitfield
+ * storage unit and the short window counters use uint8_t so this BSS array
+ * stays small enough for the DTCM placement used by the linker (s_prevLip is
+ * 4 x sizeof(PrevLipState)).  Logic is unchanged; only sizes differ.
+ */
 struct PrevLipState {
     float lipX[SPEAKING_MAX_LIP_LANDMARKS];
     float lipY[SPEAKING_MAX_LIP_LANDMARKS];
     float prevMouthOpenNorm;
-    int prevMouthValid;
     float mouthOpenWindow[MOTION_ENERGY_WINDOW];
     float motionWindow[MOTION_ENERGY_WINDOW];
-    int windowIndex;
-    int windowCount;
     float mouthOpenMean;
     float motionEnergy;
     float noiseMean;
     float noiseDev;
-    int noiseValid;
     float openBaseline;
     float openBaselineDev;
-    int openBaselineValid;
-    int x0, y0, w, h;
     float smoothBoxX0;
     float smoothBoxY0;
     float smoothBoxW;
     float smoothBoxH;
-    int smoothBoxValid;
-    int valid;
+    int x0, y0, w, h;
+    uint8_t windowIndex;
+    uint8_t windowCount;
+    /* All booleans packed into a single 4-byte allocation unit. */
+    uint32_t valid              : 1;
+    uint32_t prevMouthValid     : 1;
+    uint32_t noiseValid         : 1;
+    uint32_t openBaselineValid  : 1;
+    uint32_t smoothBoxValid     : 1;
 };
 
 static arm::app::FaceDetectionModel s_faceModel;
@@ -227,9 +234,9 @@ static void UpdateMotionWindow(
 
     state->mouthOpenWindow[state->windowIndex] = mouthOpenNorm;
     state->motionWindow[state->windowIndex] = velocity;
-    state->windowIndex = (state->windowIndex + 1) % MOTION_ENERGY_WINDOW;
+    state->windowIndex = (uint8_t)((state->windowIndex + 1) % MOTION_ENERGY_WINDOW);
     if (state->windowCount < MOTION_ENERGY_WINDOW) {
-        state->windowCount++;
+        state->windowCount = (uint8_t)(state->windowCount + 1);
     }
 
     state->prevMouthOpenNorm = mouthOpenNorm;
