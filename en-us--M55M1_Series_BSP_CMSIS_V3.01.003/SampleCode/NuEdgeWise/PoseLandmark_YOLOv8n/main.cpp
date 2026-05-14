@@ -273,7 +273,7 @@ int main()
     BoardInit();
     info("main: BoardInit done\n");
     omv_init();
-
+    Servo_PWM_Init();
     image_t frameBuffer;
     framebuffer_init_image(&frameBuffer);
 

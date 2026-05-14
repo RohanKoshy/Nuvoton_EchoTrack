@@ -9,7 +9,7 @@ void Servo_PWM_Init(void)
     CLK_EnableModuleClock(EPWM1_MODULE);
 
     /* Select EPWM1 clock source */
-    CLK_SetModuleClock(EPWM1_MODULE, CLK_EPWMSEL_EPWM0SEL_PCLK3, 0);
+    CLK_SetModuleClock(EPWM1_MODULE, CLK_EPWMSEL_EPWM1SEL_PCLK2, 0);
 
     /* Enable GPIOB clock */
     CLK_EnableModuleClock(GPIOC_MODULE);
@@ -18,7 +18,7 @@ void Servo_PWM_Init(void)
 	SYS->GPC_MFP3 |=  SYS_GPC_MFP3_PC12MFP_EPWM1_CH0;
 
     /* Configure EPWM channel 0 to 50 Hz, 5% duty (1 ms) */
-    EPWM_ConfigOutputChannel(EPWM1, 0, SERVO_FREQ, 7.5);
+    EPWM_ConfigOutputChannel(EPWM1, 0, SERVO_FREQ, 7);
 
     /* Enable output */
     EPWM_EnableOutput(EPWM1, EPWM_CH_0_MASK);
