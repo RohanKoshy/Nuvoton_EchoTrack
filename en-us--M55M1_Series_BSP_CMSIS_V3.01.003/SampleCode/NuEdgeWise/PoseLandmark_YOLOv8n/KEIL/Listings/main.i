@@ -120,20 +120,34 @@ typedef unsigned long long uintmax_t;
 
 
 
+
 struct SpeakingFaceResult {
     int x, y, w, h;
     bool isSpeaking;
     bool rawMouthOpen;
+    int lipCount;
+    int lipX[24];
+    int lipY[24];
+    float mouthOpenNorm;
+    float motionEnergy;
+    float onThreshold;
+    float offThreshold;
+    float headMove;
+    float openBaseline;
+    float openBaselineDev;
 };
 
 struct SpeakingDetectorConfig {
-    float mouthThreshold;
-    float nmsThreshold;
     float faceThreshold;
-    int hysteresisOn;
-    int hysteresisOff;
+    float landmarkThreshold;
+    float marVelocityOn;
+    float marVelocityOff;
+    float marOn;
+    float marOff;
+    int confirmFrames;
+    int releaseFrames;
 };
-# 39 "../SpeakingDetector.hpp"
+# 53 "../SpeakingDetector.hpp"
 int SpeakingDetector_Init(const SpeakingDetectorConfig *cfg);
 
 
@@ -148,8 +162,6 @@ int SpeakingDetector_RunFrame(
 
 
 
-
-
 void SpeakingDetector_Draw(
     uint8_t *rgb565Data, int frameW, int frameH,
     const SpeakingFaceResult results[], int numResults);
@@ -158,10 +170,9 @@ void SpeakingDetector_Draw(
 
 
 
-
 void SpeakingDetector_GetTensorArenas(
     void **faceArena, uint32_t *faceArenaSize,
-    void **mouthArena, uint32_t *mouthArenaSize);
+    void **landmarkArena, uint32_t *landmarkArenaSize);
 # 13 "../main.cpp" 2
 # 1 "../../../../ThirdParty/ml-embedded-evaluation-kit/source/log/include\\log_macros.h" 1
 # 21 "../../../../ThirdParty/ml-embedded-evaluation-kit/source/log/include\\log_macros.h"
@@ -105471,6 +105482,9 @@ static void omv_init()
 
 
 
+
+extern volatile uint8_t speech_detected;
+
 static void DoA_AudioPath_Init()
 {
     SYS_UnlockReg();
@@ -105489,7 +105503,7 @@ static void DoA_AudioPath_Init()
     (unsigned)actual0, (unsigned)48000U);
   printf("I2S0 CTL0=%08X CLKDIV=%08X\n",
     (unsigned)((I2S_T *) ((((uint32_t) 0x40000000UL) + 0x00250000UL) + 0x0A000UL))->CTL0, (unsigned)((I2S_T *) ((((uint32_t) 0x40000000UL) + 0x00250000UL) + 0x0A000UL))->CLKDIV);
-# 197 "../main.cpp"
+# 200 "../main.cpp"
     I2S_SetFIFO(((I2S_T *) ((((uint32_t) 0x40000000UL) + 0x00250000UL) + 0x0A000UL)),
                 (8U << (8)),
                 (7U << (16)));
@@ -105553,7 +105567,7 @@ static void doa_collect_and_process()
         g_state = STATE_SILENT;
     } else {
         g_state = STATE_SINGLE_SPEAKER;
-
+        Servo_SetAngle(90-angle);
     }
 }
 
@@ -105569,16 +105583,16 @@ int main()
     BoardInit();
     printf("INFO - "); printf("main: BoardInit done\n");
     omv_init();
-
+    Servo_PWM_Init();
     image_t frameBuffer;
     framebuffer_init_image(&frameBuffer);
 
 
     {
-        void *faceArena, *mouthArena;
-        uint32_t faceSize, mouthSize;
+        void *faceArena, *landmarkArena;
+        uint32_t faceSize, landmarkSize;
         SpeakingDetector_GetTensorArenas(&faceArena, &faceSize,
-                                         &mouthArena, &mouthSize);
+                                         &landmarkArena, &landmarkSize);
 
         const std::vector<ARM_MPU_Region_t> mpuConfig = {
             {
@@ -105588,9 +105602,9 @@ int main()
 
             },
             {
-                ((((unsigned int)mouthArena) & (0x7FFFFFFUL << 5U)) | ((((0U)) << 3U) & (0x3UL << 3U)) | ((((((0) & 1U) << 1U) | ((1) & 1U)) << 1U) & (0x3UL << 1U)) | (((1) << 0U) & (01UL ))),
+                ((((unsigned int)landmarkArena) & (0x7FFFFFFUL << 5U)) | ((((0U)) << 3U) & (0x3UL << 3U)) | ((((((0) & 1U) << 1U) | ((1) & 1U)) << 1U) & (0x3UL << 1U)) | (((1) << 0U) & (01UL ))),
 
-                ((((unsigned int)mouthArena + mouthSize - 1) & (0x7FFFFFFUL << 5U)) | (((eMPU_ATTR_CACHEABLE_WTRA) << 1U) & (0x7UL << 1U)) | ((1UL )))
+                ((((unsigned int)landmarkArena + landmarkSize - 1) & (0x7FFFFFFUL << 5U)) | (((eMPU_ATTR_CACHEABLE_WTRA) << 1U) & (0x7UL << 1U)) | ((1UL )))
 
             },
             {
@@ -105627,7 +105641,7 @@ int main()
     S_DISP_RECT sDispRect;
     Display_Init();
     Display_ClearLCD(0xFFFF);
-# 342 "../main.cpp"
+# 345 "../main.cpp"
     {
         static uint32_t dummy_src = 0xDEADBEEF;
         static uint32_t dummy_dst = 0;
@@ -105661,8 +105675,10 @@ int main()
     int numFaces = 0;
 
 
+  uint8_t ml_it=0;
     while (1)
     {
+
 
         emptyFramebuf = get_empty_framebuf();
         if (emptyFramebuf) {
@@ -105674,16 +105690,24 @@ int main()
         doa_collect_and_process();
 
 
-        fullFramebuf = get_full_framebuf();
-        if (fullFramebuf) {
-            numFaces = SpeakingDetector_RunFrame(
-                fullFramebuf->frameImage.data,
-                fullFramebuf->frameImage.w,
-                fullFramebuf->frameImage.h,
-                faceResults, 4);
+    if(ml_it%10==0)
+    {
+     fullFramebuf = get_full_framebuf();
+     if (fullFramebuf) {
+       numFaces = SpeakingDetector_RunFrame(
+         fullFramebuf->frameImage.data,
+         fullFramebuf->frameImage.w,
+         fullFramebuf->frameImage.h,
+         faceResults, 4);
 
-            fullFramebuf->eState = eFRAMEBUF_INF;
-        }
+       fullFramebuf->eState = eFRAMEBUF_INF;
+     }
+    }
+
+    for(uint8_t i=0;i<4;i++)
+    {
+     faceResults[i].isSpeaking=(faceResults[i].isSpeaking&speech_detected);
+    }
 
 
         infFramebuf = get_inf_framebuf();
@@ -105695,6 +105719,7 @@ int main()
                 faceResults, numFaces);
 
 
+
             sDispRect.u32TopLeftX = 0;
             sDispRect.u32TopLeftY = 0;
             sDispRect.u32BottonRightX = ((frameBuffer.w * 2) - 1);
@@ -105702,7 +105727,7 @@ int main()
 
             Display_FillRect((uint16_t *)infFramebuf->frameImage.data, &sDispRect,
                              2);
-# 458 "../main.cpp"
+# 472 "../main.cpp"
             u64PerfFrames++;
             if ((uint64_t)pmu_get_systick_Count() > u64PerfCycle) {
 
@@ -105730,6 +105755,7 @@ int main()
             ImageSensor_WaitCaptureDone();
             emptyFramebuf->eState = eFRAMEBUF_FULL;
         }
+    ml_it++;
     }
 
     return 0;

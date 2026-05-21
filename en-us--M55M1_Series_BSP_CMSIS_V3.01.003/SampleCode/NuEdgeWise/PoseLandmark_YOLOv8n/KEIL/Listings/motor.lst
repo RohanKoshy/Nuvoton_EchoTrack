@@ -42,39 +42,50 @@ Servo_PWM_Init:
 	.cfi_sections .debug_frame
 	.cfi_startproc
 @ %bb.0:
-	.save	{r4, lr}
-	push	{r4, lr}
-	.cfi_def_cfa_offset 8
+	.save	{r4, r5, r7, lr}
+	push	{r4, r5, r7, lr}
+	.cfi_def_cfa_offset 16
 	.cfi_offset lr, -4
-	.cfi_offset r4, -8
-	movw	r0, #1152
-	movw	r1, #33664
-	movt	r0, #128
-	movt	r1, #6
+	.cfi_offset r7, -8
+	.cfi_offset r5, -12
+	.cfi_offset r4, -16
+	movw	r4, #1152
+	movw	r5, #33664
+	movt	r4, #128
+	movt	r5, #6
 .Ltmp0:
 	.loc	5 9 5 prologue_end              @ motor.c:9:5
+	mov	r0, r4
+	mov	r1, r5
 	bl	CLK_EnableModuleClock
 .Ltmp1:
+	.loc	5 12 5                          @ motor.c:12:5
+	mov	r0, r4
+	mov	r1, r5
+	movs	r2, #0
+	movs	r3, #0
+	bl	CLK_SetModuleClock
+.Ltmp2:
 	.loc	5 15 5                          @ motor.c:15:5
 	mov.w	r0, #2048
 	mov.w	r1, #557056
 	bl	CLK_EnableModuleClock
-.Ltmp2:
+.Ltmp3:
 	.loc	5 0 5 is_stmt 0                 @ motor.c:0:5
 	movw	r0, #812
 	movw	r4, #8192
 	movt	r0, #16384
 	.loc	5 21 5 is_stmt 1                @ motor.c:21:5
 	movs	r2, #50
-	.loc	5 17 17                         @ motor.c:17:17
+	.loc	5 17 16                         @ motor.c:17:16
 	ldr	r1, [r0]
 	.loc	5 21 5                          @ motor.c:21:5
-	movs	r3, #5
+	movs	r3, #7
 	movt	r4, #16424
-	.loc	5 17 17                         @ motor.c:17:17
+	.loc	5 17 16                         @ motor.c:17:16
 	bic	r1, r1, #31
 	str	r1, [r0]
-	.loc	5 18 17                         @ motor.c:18:17
+	.loc	5 18 16                         @ motor.c:18:16
 	ldr	r1, [r0]
 	orr	r1, r1, #12
 	str	r1, [r0]
@@ -82,20 +93,20 @@ Servo_PWM_Init:
 	mov	r0, r4
 	movs	r1, #0
 	bl	EPWM_ConfigOutputChannel
-.Ltmp3:
+.Ltmp4:
 	.loc	5 24 5                          @ motor.c:24:5
 	mov	r0, r4
 	movs	r1, #1
 	bl	EPWM_EnableOutput
-.Ltmp4:
+.Ltmp5:
 	.loc	5 27 5                          @ motor.c:27:5
 	mov	r0, r4
 	movs	r1, #1
 	.loc	5 27 5 epilogue_begin is_stmt 0 @ motor.c:27:5
-	pop.w	{r4, lr}
-.Ltmp5:
-	b	EPWM_Start
+	pop.w	{r4, r5, r7, lr}
 .Ltmp6:
+	b	EPWM_Start
+.Ltmp7:
 .Lfunc_end0:
 	.size	Servo_PWM_Init, .Lfunc_end0-Servo_PWM_Init
 	.cfi_endproc
@@ -118,32 +129,29 @@ Servo_SetAngle:
 @ %bb.0:
 	@DEBUG_VALUE: Servo_SetAngle:angle <- $s0
 	vldr	s2, .LCPI1_0
-	vldr	s4, .LCPI1_1
-.Ltmp7:
+	movw	r0, #8240
+.Ltmp8:
 	.loc	5 32 9 prologue_end             @ motor.c:32:9
 	vminnm.f32	s0, s0, s2
-.Ltmp8:
-	@DEBUG_VALUE: Servo_SetAngle:angle <- $s0
-	.loc	5 0 9 is_stmt 0                 @ motor.c:0:9
-	movw	r0, #8240
-	.loc	5 33 9 is_stmt 1                @ motor.c:33:9
-	vmaxnm.f32	s0, s0, s4
 .Ltmp9:
 	@DEBUG_VALUE: Servo_SetAngle:angle <- $s0
 	.loc	5 0 9 is_stmt 0                 @ motor.c:0:9
+	vldr	s2, .LCPI1_1
 	movt	r0, #16424
-	.loc	5 36 39 is_stmt 1               @ motor.c:36:39
-	vdiv.f32	s0, s0, s2
-.Ltmp10:
-	.loc	5 38 23                         @ motor.c:38:23
+	.loc	5 38 23 is_stmt 1               @ motor.c:38:23
 	ldr	r1, [r0]
+	.loc	5 33 9                          @ motor.c:33:9
+	vmaxnm.f32	s0, s0, s2
+.Ltmp10:
+	@DEBUG_VALUE: Servo_SetAngle:angle <- $s0
+	.loc	5 0 9 is_stmt 0                 @ motor.c:0:9
 	vldr	s2, .LCPI1_2
 	vldr	s4, .LCPI1_3
-	.loc	5 38 46 is_stmt 0               @ motor.c:38:46
+	.loc	5 38 46 is_stmt 1               @ motor.c:38:46
 	adds	r1, #1
 .Ltmp11:
 	@DEBUG_VALUE: Servo_SetAngle:period <- $r1
-	.loc	5 36 30 is_stmt 1               @ motor.c:36:30
+	.loc	5 36 30                         @ motor.c:36:30
 	vfma.f32	s4, s0, s2
 .Ltmp12:
 	@DEBUG_VALUE: Servo_SetAngle:pulse_us <- $s4
@@ -175,11 +183,11 @@ Servo_SetAngle:
 @ %bb.1:
 	.loc	5 0 1 is_stmt 0                 @ motor.c:0:1
 .LCPI1_0:
-	.long	0x42b40000                      @ float 90
+	.long	0x43070000                      @ float 135
 .LCPI1_1:
-	.long	0xc2b40000                      @ float -90
+	.long	0xc3070000                      @ float -135
 .LCPI1_2:
-	.long	0x43fa0000                      @ float 500
+	.long	0x40ed097b                      @ float 7.40740728
 .LCPI1_3:
 	.long	0x44bb8000                      @ float 1500
 .LCPI1_4:
@@ -195,7 +203,7 @@ Servo_SetAngle:
 	.long	-1
 	.long	.Lfunc_begin1                   @   base address
 	.long	.Lfunc_begin1-.Lfunc_begin1
-	.long	.Ltmp10-.Lfunc_begin1
+	.long	.Ltmp13-.Lfunc_begin1
 	.short	3                               @ Loc expr size
 	.byte	144                             @ super-register DW_OP_regx
 	.byte	128                             @ 256
@@ -2378,7 +2386,7 @@ Servo_SetAngle:
 	.byte	18                              @ Abbrev [18] 0x1027:0x9 DW_TAG_GNU_call_site
 	.long	4145                            @ DW_AT_abstract_origin
                                         @ DW_AT_GNU_tail_call
-	.long	.Ltmp6                          @ DW_AT_low_pc
+	.long	.Ltmp7                          @ DW_AT_low_pc
 	.byte	0                               @ End Of Children Mark
 	.byte	19                              @ Abbrev [19] 0x1031:0x13 DW_TAG_subprogram
 	.long	.Linfo_string265                @ DW_AT_name

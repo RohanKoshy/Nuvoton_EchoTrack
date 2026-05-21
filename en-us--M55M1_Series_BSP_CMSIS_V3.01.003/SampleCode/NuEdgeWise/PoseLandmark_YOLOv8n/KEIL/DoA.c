@@ -33,7 +33,7 @@
 #define MAX_SAMPLES_DELAY ((int)(MAX_DELAY * SAMPLE_RATE))
 	
 //Gates / thresholds for Energy
-#define ENERGY_THRESH      (1.0e-5f)   // start here, tune
+#define ENERGY_THRESH      (2.0e-5f)   // start here, tune
 #define PEAK_THRESH        (0.25f)     // GCC-PHAT peak must be at least this
 #define PEAK_RATIO_THRESH  (1.30f)     // peak must beat 2nd peak by this ratio
 
@@ -41,6 +41,7 @@
 #define BAND_HIGH_HZ  3500.0f
 #define BIN_LOW  ((int)(BAND_LOW_HZ  * FRAME_SIZE / SAMPLE_RATE))
 #define BIN_HIGH ((int)(BAND_HIGH_HZ * FRAME_SIZE / SAMPLE_RATE))
+	
 
 
 
@@ -58,6 +59,7 @@ float fft_right_real[FRAME_SIZE], fft_right_imag[FRAME_SIZE];
 float hann_window[FRAME_SIZE];
 uint32_t angle_calc_amount=0;
 
+volatile uint8_t speech_detected=0;
 
 
 // 4 Microphone additional add-on inits
@@ -231,7 +233,7 @@ static inline float clamp(float x, float min, float max)
 
 
 // 4 Microphone Main DOA Algorithm
-
+/*
 float doa_process_4mic(float *mic0, float *mic1, float *mic2, float *mic3)
 {
 		// Declare new variables same name as global ones to save effort
@@ -384,7 +386,7 @@ float doa_process_4mic(float *mic0, float *mic1, float *mic2, float *mic3)
 
 
 
-
+*/
 
 
 
@@ -430,6 +432,7 @@ float doa_process_one_frame(void)
     float ER = frame_energy_mean_square(right_buffer, FRAME_SIZE, &meanR0);
 
     if (EL < ENERGY_THRESH && ER < ENERGY_THRESH) {
+				speech_detected=0;
         return -180.0f;   // your "silent" marker
     }
 
@@ -496,24 +499,58 @@ float doa_process_one_frame(void)
         fft_left_imag[FRAME_SIZE - k] = -imN;
     }
 
-    // Step 4: IFFT ? cross-correlation
+    // Step 4: IFFT to cross-correlation
     ifft_irfft_full(fft_left_real, fft_left_imag, FRAME_SIZE);
 
     for (int i = 0; i < FRAME_SIZE; i++)
         cross_corr[i] = fft_left_real[i];
 
-    // Step 5: Peak ? delay
+    // Step 5: Peak to delay
     int best_n = 0;
     float max_val = -1e9f;
 
     for (int n = -MAX_SAMPLES_DELAY; n <= MAX_SAMPLES_DELAY; n++) {
         int idx = (n + FRAME_SIZE) % FRAME_SIZE;
         float val = cross_corr[idx];
-        if (val > max_val) { max_val = val; best_n = n; }
+        if (val > max_val) { 
+					max_val = val;
+					best_n = n;
+				}
     }
+		int i0 = (best_n - 1 + FRAME_SIZE) % FRAME_SIZE;
+		int i1 = (best_n + FRAME_SIZE) % FRAME_SIZE;
+		int i2 = (best_n + 1 + FRAME_SIZE) % FRAME_SIZE;
+		float y0 = cross_corr[i0];
+		float y1 = cross_corr[i1];
+		float y2 = cross_corr[i2];
+		float denom = y0 - 2.0f*y1 + y2;
+		float frac=(fabsf(denom)>1e-12f)?0.5f*(y0 - y2) / denom : 0.0f;
+		if(frac>0.5f)
+		{
+			frac =0.5f; // clamp to ±0.5 sample
+		}
+		if(frac < -0.5f)
+		{
+			frac = -0.5f;
+		}
+		float best_n_f = (float)best_n + frac;
+		
+		float second_max = -1e9f;
+        for (int n = -MAX_SAMPLES_DELAY; n <= MAX_SAMPLES_DELAY; n++) {
+            if (abs(n - best_n) <= MAX_SAMPLES_DELAY) continue;
+            int   idx = (n + FRAME_SIZE) % FRAME_SIZE;
+            float val = cross_corr[idx];
+            if (val > second_max) second_max = val;
+        }
+        float peak_ratio = max_val / (fabsf(second_max) + 1e-12f);
+        if (peak_ratio < PEAK_RATIO_THRESH)
+				{
+          speech_detected=0;  
+					return -180.0f;
+				}
 
-    float delta_t = (float)best_n / (float)SAMPLE_RATE;
-
+    //float delta_t = (float)best_n / (float)SAMPLE_RATE;
+		float delta_t = (float)best_n_f / (float)SAMPLE_RATE;
     // Step 6: DoA angle
     float ratio = (SPEED_OF_SOUND * delta_t) / MIC_SPACING;
     if (ratio > 1.0f)  ratio = 1.0f;
@@ -528,9 +565,10 @@ float doa_process_one_frame(void)
         //printf("angle:  %.2f best_n=%d max_val=%f EL=%e ER=%e ratio =%f\n",
          //      angle, best_n, max_val, EL, ER, ratio);
 			printf("angle:  %.2f\n", angle);
+			speech_detected=1;
 				return angle;
     }
-
+		speech_detected=0;
     return -180.0f;
 }
 

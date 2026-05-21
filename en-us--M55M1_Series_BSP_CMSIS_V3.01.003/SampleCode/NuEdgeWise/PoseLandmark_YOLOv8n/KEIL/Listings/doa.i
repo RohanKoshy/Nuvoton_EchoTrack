@@ -23422,7 +23422,7 @@ void doa_run_synthetic_delay_test(void);
 extern float left_buffer[256];
 extern float right_buffer[256];
 # 21 "DoA.c" 2
-# 50 "DoA.c"
+# 51 "DoA.c"
 float left_buffer[256];
 float right_buffer[256];
 
@@ -23434,6 +23434,7 @@ float fft_right_real[256], fft_right_imag[256];
 float hann_window[256];
 uint32_t angle_calc_amount=0;
 
+volatile uint8_t speech_detected=0;
 
 
 
@@ -23475,7 +23476,7 @@ void init_hann_window(float* window, int size)
     for (int n = 0; n < size; n++)
         window[n] = 0.5f * (1.0f - cosf((2.0f * 3.14159265358979f * n) / (size - 1)));
 }
-# 111 "DoA.c"
+# 113 "DoA.c"
 static float frame_energy_mean_square(const float *x, int N, float *mean_out)
 {
     float mean = 0.0f;
@@ -23593,170 +23594,15 @@ static inline float clamp(float x, float min, float max)
  if (x > max) return max;
  return x;
 }
-
-
-
-
-
-
-
-float doa_process_4mic(float *mic0, float *mic1, float *mic2, float *mic3)
-{
-
-  float *left_buffer;
-  float *right_buffer;
-
-  int silent_pairs = 0;
-  int valid_mask[6] = {0};
-
-
-  for (unsigned int p = 0; p < (unsigned int)(sizeof(mic_spacing) / sizeof(mic_spacing[0])); p++)
-  {
-   switch (p)
-   {
-     case 0: left_buffer = mic0; right_buffer = mic1; break;
-     case 1: left_buffer = mic0; right_buffer = mic2; break;
-     case 2: left_buffer = mic0; right_buffer = mic3; break;
-     case 3: left_buffer = mic1; right_buffer = mic2; break;
-     case 4: left_buffer = mic1; right_buffer = mic3; break;
-     case 5: left_buffer = mic2; right_buffer = mic3; break;
-   }
-   float meanL0, meanR0;
-   float EL = frame_energy_mean_square(left_buffer, 256, &meanL0);
-   float ER = frame_energy_mean_square(right_buffer, 256, &meanR0);
-
-   if (EL < (1.0e-5f) && ER < (1.0e-5f))
-   {
-            silent_pairs++;
-      valid_mask[p] = 0;
-            continue;
-      }
-   valid_mask[p] = 1;
-
-
-   float meanL = meanL0;
-   float meanR = meanR0;
-
-   for (int i = 0; i < 256; i++) {
-     float l = (left_buffer[i] - meanL);
-     float r = (right_buffer[i] - meanR);
-
-     l *= hann_window[i];
-     r *= hann_window[i];
-
-     fft_left_real[i] = l;
-     fft_left_imag[i] = 0.0f;
-
-     fft_right_real[i] = r;
-     fft_right_imag[i] = 0.0f;
-   }
-
-
-   fft_rfft_full(fft_left_real, fft_left_imag, 256, specL_packed);
-   fft_rfft_full(fft_right_real, fft_right_imag, 256, specR_packed);
-
-
-   fft_left_real[0] = 0.0f;
-   fft_left_imag[0] = 0.0f;
-
-   fft_left_real[256/2] = 0.0f;
-   fft_left_imag[256/2] = 0.0f;
-
-   for (int k = 1; k < 256/2; k++)
-   {
-
-     if (k < ((int)(150.0f * 256 / 48000)) || k > ((int)(3500.0f * 256 / 48000)))
-     {
-      fft_left_real[k] = 0.0f;
-      fft_left_imag[k] = 0.0f;
-
-      fft_left_real[256 - k] = 0.0f;
-      fft_left_imag[256 - k] = 0.0f;
-
-      continue;
-     }
-
-
-     float real = fft_left_real[k]*fft_right_real[k]
-           + fft_left_imag[k]*fft_right_imag[k];
-
-     float imag = fft_left_imag[k]*fft_right_real[k]
-           - fft_left_real[k]*fft_right_imag[k];
-
-     float mag = sqrtf(real*real + imag*imag) + 1e-12f;
-
-     float reN = real / mag;
-     float imN = imag / mag;
-
-     fft_left_real[k] = reN;
-     fft_left_imag[k] = imN;
-
-
-     fft_left_real[256 - k] = reN;
-     fft_left_imag[256 - k] = -imN;
-   }
-
-
-   ifft_irfft_full(fft_left_real, fft_left_imag, 256);
-
-   for (int i = 0; i < 256; i++)
-     cross_corr[i] = fft_left_real[i];
-
-
-   int best_n = 0;
-   float max_val = -1e9f;
-
-   for (int n = -((int)((0.07f / 343.0f) * 48000)); n <= ((int)((0.07f / 343.0f) * 48000)); n++) {
-     int idx = (n + 256) % 256;
-     float val = cross_corr[idx];
-     if (val > max_val) { max_val = val; best_n = n; }
-   }
-
-   float delta_t = (float)best_n / (float)48000;
-   mic_spacing_tdoa[p] = delta_t;
-  }
-
-  if (silent_pairs == 6)
-        return -180.0f;
-
-
-    float numerator = 0.0f;
-  float denominator = 0.0f;
-
-
-  for (int i = 0; i < (int)(sizeof(mic_spacing) / sizeof(mic_spacing[0])); i++) {
-   if (!valid_mask[i]) continue;
-
-   float b = 343.0f * mic_spacing_tdoa[i];
-   numerator += mic_spacing[i] * b;
-   denominator += mic_spacing[i] * mic_spacing[i];
-  }
-
-  if (denominator == 0.0f) return 0.0f;
-
-  float sin_theta = numerator / denominator;
-
-  sin_theta = clamp(sin_theta, -1.0f, 1.0f);
-
-
-  float angle = asinf(sin_theta) * 180.0f / 3.14159265358979f;
-
-  if(1)
-    {
-
-
-   printf("angle:  %.2f\n", angle);
-   return angle;
-    }
-}
-# 426 "DoA.c"
+# 428 "DoA.c"
 float doa_process_one_frame(void)
 {
     float meanL0, meanR0;
     float EL = frame_energy_mean_square(left_buffer, 256, &meanL0);
     float ER = frame_energy_mean_square(right_buffer, 256, &meanR0);
 
-    if (EL < (1.0e-5f) && ER < (1.0e-5f)) {
+    if (EL < (2.0e-5f) && ER < (2.0e-5f)) {
+    speech_detected=0;
         return -180.0f;
     }
 
@@ -23836,11 +23682,45 @@ float doa_process_one_frame(void)
     for (int n = -((int)((0.07f / 343.0f) * 48000)); n <= ((int)((0.07f / 343.0f) * 48000)); n++) {
         int idx = (n + 256) % 256;
         float val = cross_corr[idx];
-        if (val > max_val) { max_val = val; best_n = n; }
+        if (val > max_val) {
+     max_val = val;
+     best_n = n;
+    }
+    }
+  int i0 = (best_n - 1 + 256) % 256;
+  int i1 = (best_n + 256) % 256;
+  int i2 = (best_n + 1 + 256) % 256;
+  float y0 = cross_corr[i0];
+  float y1 = cross_corr[i1];
+  float y2 = cross_corr[i2];
+  float denom = y0 - 2.0f*y1 + y2;
+  float frac=(fabsf(denom)>1e-12f)?0.5f*(y0 - y2) / denom : 0.0f;
+  if(frac>0.5f)
+  {
+   frac =0.5f;
+  }
+  if(frac < -0.5f)
+  {
+   frac = -0.5f;
+  }
+  float best_n_f = (float)best_n + frac;
+
+  float second_max = -1e9f;
+        for (int n = -((int)((0.07f / 343.0f) * 48000)); n <= ((int)((0.07f / 343.0f) * 48000)); n++) {
+            if (abs(n - best_n) <= ((int)((0.07f / 343.0f) * 48000))) continue;
+            int idx = (n + 256) % 256;
+            float val = cross_corr[idx];
+            if (val > second_max) second_max = val;
+        }
+        float peak_ratio = max_val / (fabsf(second_max) + 1e-12f);
+        if (peak_ratio < (1.30f))
+    {
+          speech_detected=0;
+     return -180.0f;
     }
 
-    float delta_t = (float)best_n / (float)48000;
 
+  float delta_t = (float)best_n_f / (float)48000;
 
     float ratio = (343.0f * delta_t) / 0.07f;
     if (ratio > 1.0f) ratio = 1.0f;
@@ -23855,8 +23735,9 @@ float doa_process_one_frame(void)
 
 
    printf("angle:  %.2f\n", angle);
+   speech_detected=1;
     return angle;
     }
-
+  speech_detected=0;
     return -180.0f;
 }

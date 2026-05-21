@@ -13155,16 +13155,16 @@ void Servo_PWM_Init(void)
     CLK_EnableModuleClock(((((13ULL) & 0xffUL) << 47)|((((uint64_t)(1)) & 0x1fUL) << 10)| (((7ULL) & 0xffUL) << 39)|(((0x1ULL) & 0xffUL) << 23)|((((uint64_t)(4)) & 0x1fUL) << 5)| (((0x0ULL) & 0xffUL) << 31)|(((0x0ULL) & 0xffUL) << 15)|(((0x0ULL) & 0x1fUL) << 0)));
 
 
-
+    CLK_SetModuleClock(((((13ULL) & 0xffUL) << 47)|((((uint64_t)(1)) & 0x1fUL) << 10)| (((7ULL) & 0xffUL) << 39)|(((0x1ULL) & 0xffUL) << 23)|((((uint64_t)(4)) & 0x1fUL) << 5)| (((0x0ULL) & 0xffUL) << 31)|(((0x0ULL) & 0xffUL) << 15)|(((0x0ULL) & 0x1fUL) << 0)), (0x0UL << (4)), 0);
 
 
     CLK_EnableModuleClock(((((17ULL) & 0xffUL) << 47)|((((uint64_t)(2)) & 0x1fUL) << 10)| (((0x0ULL) & 0xffUL) << 39)|(((0x0ULL) & 0xffUL) << 23)|(((0x0ULL) & 0x1fUL) << 5)| (((0x0ULL) & 0xffUL) << 31)|(((0x0ULL) & 0xffUL) << 15)|(((0x0ULL) & 0x1fUL) << 0)));
 
-  ((SYS_T *) ((((uint32_t) 0x40000000UL) + 0x00000000UL) + 0x00000UL))->GPC_MFP3 &= ~(0x1ful << (0));
-  ((SYS_T *) ((((uint32_t) 0x40000000UL) + 0x00000000UL) + 0x00000UL))->GPC_MFP3 |= (0xCUL<<(0));
+ ((SYS_T *) ((((uint32_t) 0x40000000UL) + 0x00000000UL) + 0x00000UL))->GPC_MFP3 &= ~(0x1ful << (0));
+ ((SYS_T *) ((((uint32_t) 0x40000000UL) + 0x00000000UL) + 0x00000UL))->GPC_MFP3 |= (0xCUL<<(0));
 
 
-    EPWM_ConfigOutputChannel(((EPWM_T *) ((((uint32_t) 0x40000000UL) + 0x00280000UL) + 0x02000UL)), 0, 50, 5);
+    EPWM_ConfigOutputChannel(((EPWM_T *) ((((uint32_t) 0x40000000UL) + 0x00280000UL) + 0x02000UL)), 0, 50, 7);
 
 
     EPWM_EnableOutput(((EPWM_T *) ((((uint32_t) 0x40000000UL) + 0x00280000UL) + 0x02000UL)), (0x1U));
@@ -13175,11 +13175,11 @@ void Servo_PWM_Init(void)
 
 void Servo_SetAngle(float angle)
 {
-    if (angle > 90) angle = 90;
-    if (angle < -90) angle = -90;
+    if (angle > 135.0f) angle = 135.0f;
+    if (angle < -135.0f) angle = -135.0f;
 
 
-    float pulse_us = 1500.0f + (angle / 90.0f) * 500.0f;
+    float pulse_us = 1500.0f + (angle * (2000.0f / 270.0f));
 
     uint32_t period = ((((EPWM_T *) ((((uint32_t) 0x40000000UL) + 0x00280000UL) + 0x02000UL)))->PERIOD[(0)]) + 1;
 

@@ -166,6 +166,9 @@ static void omv_init()
 /*  Pin MFPs and module clocks are already handled by Mic_Sys_Init.   */
 /*  This function only configures I2S peripherals + PDMA.              */
 /* ------------------------------------------------------------------ */
+
+extern volatile uint8_t speech_detected;
+
 static void DoA_AudioPath_Init()
 {
     SYS_UnlockReg();
@@ -257,7 +260,7 @@ static void doa_collect_and_process()
         g_state = STATE_SILENT;
     } else {
         g_state = STATE_SINGLE_SPEAKER;
-        //Servo_SetAngle(-angle);
+        Servo_SetAngle(90-angle);
     }
 }
 
@@ -372,8 +375,10 @@ int main()
     int numFaces = 0;
 
     /* ---- Main loop ---- */
+		uint8_t ml_it=0;
     while (1)
     {
+				
         /* 1. Trigger camera capture (runs in parallel via CCAP hardware) */
         emptyFramebuf = get_empty_framebuf();
         if (emptyFramebuf) {
@@ -385,18 +390,26 @@ int main()
         doa_collect_and_process();
 
         /* 3. Run ML on a full buffer */
-        fullFramebuf = get_full_framebuf();
-        if (fullFramebuf) {
-            numFaces = SpeakingDetector_RunFrame(
-                fullFramebuf->frameImage.data,
-                fullFramebuf->frameImage.w,
-                fullFramebuf->frameImage.h,
-                faceResults, MAX_TRACKED_FACES);
+				if(ml_it%10==0)
+				{
+					fullFramebuf = get_full_framebuf();
+					if (fullFramebuf) {
+							numFaces = SpeakingDetector_RunFrame(
+									fullFramebuf->frameImage.data,
+									fullFramebuf->frameImage.w,
+									fullFramebuf->frameImage.h,
+									faceResults, MAX_TRACKED_FACES);
 
-            fullFramebuf->eState = eFRAMEBUF_INF;
-        }
-
+							fullFramebuf->eState = eFRAMEBUF_INF;
+					}
+				}
         /* 4. Draw + display an inference-done buffer */
+				for(uint8_t i=0;i<MAX_TRACKED_FACES;i++)
+				{
+					faceResults[i].isSpeaking=(faceResults[i].isSpeaking&speech_detected);
+				}
+					
+				
         infFramebuf = get_inf_framebuf();
         if (infFramebuf) {
             SpeakingDetector_Draw(
@@ -404,6 +417,7 @@ int main()
                 infFramebuf->frameImage.w,
                 infFramebuf->frameImage.h,
                 faceResults, numFaces);
+					
 
 #if defined (__USE_DISPLAY__)
             sDispRect.u32TopLeftX = 0;
@@ -482,8 +496,9 @@ int main()
             ImageSensor_WaitCaptureDone();
             emptyFramebuf->eState = eFRAMEBUF_FULL;
         }
+				ml_it++;
     }
-
+		
     return 0;
 }
 
